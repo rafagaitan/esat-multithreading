@@ -1,0 +1,38 @@
+SET(LIB_NAME hdk)
+set(HEADER_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+
+find_package(OpenGL)
+find_package(GLFW)
+find_package(GLEW)
+
+SET(SOURCES
+    window.cpp
+)
+
+SET(HEADERS
+    ${HEADER_PATH}/Export.h
+    ${HEADER_PATH}/window.hpp
+    ${HEADER_PATH}/types.hpp
+)
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${GLEW_INCLUDE_DIR}
+    ${GLFW_INCLUDE_DIR}
+)
+
+SET(LIBRARIES
+    ${OPENGL_LIBRARIES}
+    ${GLFW_LIBRARIES}
+    ${GLEW_LIBRARIES}
+)
+
+SET(LIBRARIES_OPTIMIZED
+)
+
+SET(LIBRARIES_DEBUG
+)
+
+ADD_DEFINITIONS(-DHDK_LIBRARY)
+
+SETUP_CORELIB(${LIB_NAME} mt)

@@ -1,0 +1,65 @@
+# This file will be configured to contain variables for CPack. These variables
+# should be set in the CMake list file of the project before CPack module is
+# included. Example variables are:
+#   CPACK_GENERATOR                     - Generator used to create package
+#   CPACK_INSTALL_CMAKE_PROJECTS        - For each project (path, name, component)
+#   CPACK_CMAKE_GENERATOR               - CMake Generator used for the projects
+#   CPACK_INSTALL_COMMANDS              - Extra commands to install components
+#   CPACK_INSTALL_DIRECTORIES           - Extra directories to install
+#   CPACK_PACKAGE_DESCRIPTION_FILE      - Description file for the package
+#   CPACK_PACKAGE_DESCRIPTION_SUMMARY   - Summary of the package
+#   CPACK_PACKAGE_EXECUTABLES           - List of pairs of executables and labels
+#   CPACK_PACKAGE_FILE_NAME             - Name of the package generated
+#   CPACK_PACKAGE_ICON                  - Icon used for the package
+#   CPACK_PACKAGE_INSTALL_DIRECTORY     - Name of directory for the installer
+#   CPACK_PACKAGE_NAME                  - Package project name
+#   CPACK_PACKAGE_VENDOR                - Package project vendor
+#   CPACK_PACKAGE_VERSION               - Package project version
+#   CPACK_PACKAGE_VERSION_MAJOR         - Package project version (major)
+#   CPACK_PACKAGE_VERSION_MINOR         - Package project version (minor)
+#   CPACK_PACKAGE_VERSION_PATCH         - Package project version (patch)
+
+# There are certain generator specific ones
+
+# NSIS Generator:
+#   CPACK_PACKAGE_INSTALL_REGISTRY_KEY  - Name of the registry key for the installer
+#   CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS - Extra commands used during uninstall
+#   CPACK_NSIS_EXTRA_INSTALL_COMMANDS   - Extra commands used during install
+
+SET(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}-${OS_ARCH}")
+SET(CPACK_CMAKE_GENERATOR "${CMAKE_GENERATOR}")
+SET(CPACK_GENERATOR "${CPACK_GENERATOR}")
+SET(CPACK_INSTALL_PREFIX "${SHORT_NAME}_${VERSION}")
+SET(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};${SHORT_NAME};${PACKAGE_CPACK_COMPONENT};/")
+SET(CPACK_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules;")
+SET(CPACK_PACKAGE_DESCRIPTION "${SHORT_NAME} ${PACKAGE_CPACK_COMPONENT}")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.txt")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Mirage Frameworks")
+SET(CPACK_PACKAGE_FILE_NAME "${PACKAGE_PACKAGE_FILE_NAME}")
+SET(CPACK_PACKAGE_NAME "${SHORT_NAME} ${PACKAGE_CPACK_COMPONENT} ${VERSION}")
+SET(CPACK_PACKAGE_VENDOR "AI2 - Mirage Technologies S.L. - Esphera Visual Systems S.L.")
+SET(CPACK_PACKAGE_CONTACT "rafa.gaitan@mirage-tech.com - jtorres@ai2.upv.es")
+SET(CPACK_PACKAGE_VERSION "${VERSION}")
+SET(CPACK_PACKAGE_VERSION_MAJOR "${MAJOR_VERSION}")
+SET(CPACK_PACKAGE_VERSION_MINOR "${MINOR_VERSION}")
+SET(CPACK_PACKAGE_VERSION_PATCH "${PATCH_VERSION}")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "${SHORT_VERSION}_${MAJOR_VERSION}_${MINOR_VERSION}")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
+SET(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.txt")
+SET(CPACK_PACKAGE_EXECUTABLES
+        "${PACKAGE_PACKAGE_EXECUTABLE}" "${PACKAGE_PACKAGE_EXECUTABLE_DESCRIPTION}")
+IF(WIN32 AND NOT UNIX)
+    # There is a bug in NSI that does not handle full unix paths properly. Make
+    # sure there is at least one set of four (4) backlasshes.
+    SET(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/icons\\\\icon.ico")
+    SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\${PACKAGE_CPACK_COMPONENT}.exe")
+    SET(CPACK_NSIS_PACKAGE_NAME "Mirage Frameworks ${PACKAGE_CPACK_COMPONENT} ${VERSION}")
+    SET(CPACK_NSIS_INSTALL_ROOT "\$PROGRAMFILES")
+    SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\mworld.blogspot.com")
+    SET(CPACK_NSIS_CONTACT "rafa.gaitan@mirage-tech.com - jtorres@ai2.upv.es")
+    SET(CPACK_NSIS_MODIFY_PATH ON)
+ELSE(WIN32 AND NOT UNIX)
+    SET(CPACK_STRIP_FILES "bin/${PACKAGE_CPACK_COMPONENT}")
+    SET(CPACK_SOURCE_STRIP_FILES "")
+ENDIF(WIN32 AND NOT UNIX)
+
