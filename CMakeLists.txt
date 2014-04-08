@@ -38,8 +38,10 @@ link_directories(${LIBRARY_OUTPUT_PATH})
 #add_subdirectory(gtest-1.7.0)
 add_subdirectory(Multithreading)
 add_subdirectory(OpenGL)
-add_subdirectory(CUDA)
-add_subdirectory(OpenCL)
+if(WIN32) # temporal until I figure out how to fix building
+  add_subdirectory(CUDA)
+  add_subdirectory(OpenCL)
+endif()
 
 INCLUDE(InstallRequiredSystemLibraries)
 

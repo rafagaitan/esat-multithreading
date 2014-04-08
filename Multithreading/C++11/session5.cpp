@@ -89,7 +89,7 @@ struct event_data
         task_complete
     };
     explicit event_data(event_type type): 
-                        type(type) { }   
+                        type(type), task() { }   
     explicit event_data(event_type type, std::shared_ptr<ITask> task): 
                         type(type), task(task) { } 
     event_type            type;
@@ -125,7 +125,7 @@ private:
 std::shared_ptr<event_data> get_event()
 {
     return eventsQueue.wait_pop();
-};
+}
 
 void process(ThreadPool& pool, std::shared_ptr<event_data> event)
 {
@@ -153,7 +153,7 @@ void process(ThreadPool& pool, std::shared_ptr<event_data> event)
     case event_data::quit:
         break;
     }
-};
+}
 
 void gui_thread() 
 {
@@ -171,7 +171,7 @@ void gui_thread()
 class ExecuteTask: public Task
 {
 public:
-    ExecuteTask(const std::string& command): command(command) { }
+    ExecuteTask(const std::string& command): command(command), progress(0) { }
     virtual ~ExecuteTask() { }
     virtual void executeImpl()
     {

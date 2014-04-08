@@ -25,11 +25,11 @@ FIND_PATH(GLFW_INCLUDE_DIR glfw3.h DOC "Path to GLFW include directory."
   ${GLFW_DIR}
   $ENV{GLFW_DIR}
   $ENV{GLFW_ROOT}
-  PATH_SUFFIXES include include/GL
+  PATH_SUFFIXES include include/GL include/GLFW
 )
 
 FIND_LIBRARY(GLFW_LIBRARY DOC "Absolute path to GLFW library."
-  NAMES glfw3dll glfw3
+  NAMES glfw3dll glfw3 glfw
   PATHS
   ${GLFW_DIR}
   $ENV{GLFW_DIR}
