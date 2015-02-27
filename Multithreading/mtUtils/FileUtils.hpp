@@ -37,24 +37,14 @@
 **********************************************************************************/
 #pragma once
 
-#include <chrono>
-#include <iostream>
 #include <string>
 
+#include <mtUtils/Export.hpp>
 
-struct ScopedTimer
-{
-    typedef std::chrono::duration<float> float_seconds;
-    ScopedTimer(const std::string& infoText):
-                _infoText(infoText), 
-                _start(std::chrono::system_clock::now()) { }
-    ~ScopedTimer() 
-    {
-        auto elapsed = std::chrono::duration_cast<float_seconds>(std::chrono::system_clock::now() - _start);
-        std::cout << "Elapsed time for " << _infoText <<": " << elapsed.count() << std::endl;
-    }
-    std::string                                        _infoText;
-    std::chrono::time_point<std::chrono::system_clock> _start;
-};
-
-
+namespace mtUtils
+{	
+	extern ESAT_EXPORT std::string getFilePath(const std::string& fileName);
+	extern ESAT_EXPORT void makeDirectory( const std::string &path );
+	extern ESAT_EXPORT void makeDirectoryForFile( const std::string &path );
+	extern ESAT_EXPORT bool fileExists(const std::string &filename);
+}

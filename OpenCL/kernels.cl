@@ -35,13 +35,6 @@
        |  http://www.esat.es/estudios/programacion-multihilo/?pnt=621  |
        -----------------------------------------------------------------
 **********************************************************************************/
-// session 6
-__kernel void addKernel(__global int *c, __global const int *a, __global const int *b)
-{
-    int i = get_global_id(0);
-    c[i] = a[i] + b[i];
-}
-
 // session 8
 __kernel void multKernel(__global int *c, __global const int *a, __global const int *b)
 {
@@ -64,6 +57,28 @@ __kernel void dp_mul(__global const float *a,
     if (id < N)
         c[id] = a[id] * b[id];
 }
+
+__kernel void addKernel(__global float *c, __global const float *a, __global const float *b)
+{
+    int i = get_global_id(0);
+    c[i] = a[i] + b[i];
+}
+
+__kernel void fillKernel(__global float *a, __global float* b)
+{
+    int i = get_global_id(0);
+    a[i] = sin((float)i)*sin((float)i);
+    b[i] = cos((float)i)*cos((float)i);
+}
+
+__kernel void fillAndAddKernel(__global float* c, __global float *a, __global float* b)
+{
+    int i = get_global_id(0);
+    a[i] = sin((float)i)*sin((float)i);
+    b[i] = cos((float)i)*cos((float)i);
+    c[i] = a[i] + b[i];
+}
+
 
 // session 10
 

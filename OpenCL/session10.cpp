@@ -46,16 +46,12 @@
 // hdk includes
 #include <window.hpp>
 
-#include "config.h"
+#include "Config.hpp"
 
-#if defined(__APPLE__) || defined(__MACOSX)
-#include <OpenCL/cl.hpp>
-#else
 #include "cl.hpp"
-#endif
 
-#include "OpenCLUtils.h"
-#include "OpenGLUtils.h"
+#include "OpenCLUtils.hpp"
+#include "OpenGLUtils.hpp"
 
 const float ViewWidth = 800;
 const float ViewHeight = 600;
@@ -93,7 +89,7 @@ private:
     GLuint _renderProgram;
     GLint  _vertexPositionCULocation;
     GLint _diffuseColorCULocation;
-    GLint _lightDirectionCULocation;
+    //GLint _lightDirectionCULocation;
     GLint _lightColorCULocation;
     GLint _ambientColorCULocation;
 
@@ -123,7 +119,7 @@ public:
         ,_renderProgram(0)
         ,_vertexPositionCULocation(-1)
         ,_diffuseColorCULocation(-1)
-        ,_lightDirectionCULocation(-1)
+        //,_lightDirectionCULocation(-1)
         ,_lightColorCULocation(-1)
         ,_ambientColorCULocation(-1)
 
@@ -153,7 +149,8 @@ public:
         }
         catch(cl::Error& err) 
         {
-            std::cerr << "Error in OpenCL:" << err.what() << std::endl;
+            std::cerr << "Error in OpenCL:" << err.what() << " Error code=" << err.err() << std::endl;
+
             exit(-1);
         }
         _startTime = std::chrono::system_clock::now();
@@ -195,37 +192,44 @@ public:
         glVertexAttribPointer(_vertexPositionCULocation, 4, GL_FLOAT, false, sizeof(math::float4), NULL);
 
         // state
-        glPointSize(2.0f);
+        glPointSize(1.0f);
         glUniform4f(_diffuseColorCULocation, 0.75, 0.75, 0.75, 1);
         glUniform4f(_lightColorCULocation, 1, 1, 1, 1);
         glUniform4f(_ambientColorCULocation, 0, 0, 0, 1);
 
         glDrawArrays(GL_POINTS,0,_nDestVertices);
 
-        glUseProgram(NULL);
+        glUseProgram(0);
     }
 
 protected:
     void initCL()
     {
-        _context = opencl::createCLGLContext(CL_DEVICE_TYPE_GPU); 
+        _context = opencl::createCLGLContext(CL_DEVICE_TYPE_GPU);
+
+        std::cerr << "After CLGL Context" << std::endl;
 
         std::vector<cl::Device> devices = _context.getInfo<CL_CONTEXT_DEVICES>();
-        std::string sumIntSrc = opencl::loadKernel((std::string(RESOURCES_PATH) + 
-                                                   std::string("/kernels.cl")).c_str());
-        cl::Program::Sources source(1, std::make_pair(sumIntSrc.c_str(),sumIntSrc.size()));
+        std::string sumIntSrc = opencl::loadKernel("kernels.cl");
+        cl::Program::Sources source(1, std::make_pair(sumIntSrc.c_str(), sumIntSrc.size()));
         _program = cl::Program(_context, source);
         _program.build(devices);
 
+        std::cerr << "After build program" << std::endl;
+
         _kernel_computeVertices = cl::Kernel(_program, "computeVertices");
+
+        std::cerr << "After load kernel" << std::endl;
 
         _destVBO_CL.resize(1);
         _destVBO_CL[0] = cl::BufferGL(_context, CL_MEM_WRITE_ONLY, _destVertexVBO);
 
+        std::cerr << "After BufferGL" << std::endl;
+
         _queue = cl::CommandQueue(_context, devices[0], 0);
-        _kernel_computeVertices.setArg(0,_destVBO_CL[0]);
-        _kernel_computeVertices.setArg(1,meshWidth);
-        _kernel_computeVertices.setArg(2,meshHeight);
+        _kernel_computeVertices.setArg(0, _destVBO_CL[0]);
+        _kernel_computeVertices.setArg(1, meshWidth);
+        _kernel_computeVertices.setArg(2, meshHeight);
     }
 
     void initGL()
@@ -243,11 +247,9 @@ GLuint createProgram() {
 
     bool success = true;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    success &= opengl::CompileGLShaderFromFile(vertexShader, 
-                (std::string(RESOURCES_PATH) + std::string("/Vertex.glsl")).c_str());
+    success &= opengl::CompileGLShaderFromFile(vertexShader, "Vertex.glsl");
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    success &= opengl::CompileGLShaderFromFile(fragmentShader, 
-                (std::string(RESOURCES_PATH) + std::string("/Fragment.glsl")).c_str());
+    success &= opengl::CompileGLShaderFromFile(fragmentShader, "Fragment.glsl");
     if(success) {
         program = glCreateProgram();
 

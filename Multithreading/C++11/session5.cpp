@@ -43,12 +43,12 @@
 #include <random>
 #include <algorithm>
 
-#include <mtUtils/ScopedThread.h>
-#include <mtUtils/ThreadSafeStack.h>
-#include <mtUtils/ThreadSafeQueue.h>
-#include <mtUtils/ThreadPool.h>
-#include <mtUtils/Barrier.h>
-#include <mtUtils/Algorithms.h>
+#include <mtUtils/ScopedThread.hpp>
+#include <mtUtils/ThreadSafeStack.hpp>
+#include <mtUtils/ThreadSafeQueue.hpp>
+#include <mtUtils/ThreadPool.hpp>
+#include <mtUtils/Barrier.hpp>
+#include <mtUtils/Algorithms.hpp>
 
 template <typename T>
 std::vector<T> fillIntVectorData(size_t numelements = 10, bool sequential = true)
@@ -187,13 +187,13 @@ public:
                     ScopedTimer t("std::for_each");
                     std::for_each(data.begin(), data.end(), [](size_t& v){ v*=2; });
                 }
-                progress.store(i*100/2.5);
+                progress.store(i*100.0f/2.5f);
                 eventsQueue.push(event_data(event_data::update_task, shared_from_this()));
                 {
                     ScopedTimer t("std::parallel_for_each");
                     parallel_for_each(data.begin(), data.end(), [](size_t& v){ v*=2; });
                 }
-                progress.store(i*100/5);
+                progress.store(i*100.0f/5.0f);
                 eventsQueue.push(event_data(event_data::update_task, shared_from_this()));
                 numElements*=10;
             }
@@ -213,7 +213,7 @@ protected:
         std::cout << "Execute Task completed" << std::endl;
     }
     std::string command;
-    std::atomic<int> progress;
+    std::atomic<float> progress;
 };
 
 class CommandTask: public Task

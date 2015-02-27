@@ -45,8 +45,8 @@
 #include <stdexcept>
 #include <atomic>
 
-#include <mtUtils/ThreadSafeQueue.h>
-#include <mtUtils/ScopedThread.h>
+#include <mtUtils/ThreadSafeQueue.hpp>
+#include <mtUtils/ScopedThread.hpp>
 
 
 class ThreadPool 

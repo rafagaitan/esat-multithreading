@@ -7,15 +7,15 @@ SET(SOURCES
 )
 
 SET(HEADERS
-    ${HEADER_PATH}/Export.h
-    ${HEADER_PATH}/ArgumentParser.h
-    ${HEADER_PATH}/FileUtils.h
-    ${HEADER_PATH}/ThreadPool.h
-    ${HEADER_PATH}/ScopedThread.h
-    ${HEADER_PATH}/ThreadSafeStack.h
-    ${HEADER_PATH}/ThreadSafeQueue.h
-    ${HEADER_PATH}/Barrier.h
-    ${HEADER_PATH}/Algorithms.h
+    ${HEADER_PATH}/Export.hpp
+    ${HEADER_PATH}/ArgumentParser.hpp
+    ${HEADER_PATH}/FileUtils.hpp
+    ${HEADER_PATH}/ThreadPool.hpp
+    ${HEADER_PATH}/ScopedThread.hpp
+    ${HEADER_PATH}/ThreadSafeStack.hpp
+    ${HEADER_PATH}/ThreadSafeQueue.hpp
+    ${HEADER_PATH}/Barrier.hpp
+    ${HEADER_PATH}/Algorithms.hpp
 )
 
 include_directories(

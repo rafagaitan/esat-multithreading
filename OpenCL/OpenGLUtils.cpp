@@ -49,7 +49,7 @@
 #include <iterator>
 #include <fstream>
 
-#include "OpenGLUtils.h"
+#include "OpenGLUtils.hpp"
 
 using namespace opengl;
 
@@ -76,7 +76,16 @@ bool opengl::printShaderInfoLog(GLuint obj)
 
 std::string opengl::loadShader(const char* name)
 {
-    std::ifstream in (name);
+    std::ifstream in(name);
+    if (!in.good())
+    {
+        in.open((std::string(RESOURCES_PATH) + std::string("/") + std::string(name)).c_str());
+    }
+    if (!in.good())
+    {
+        std::cerr << "Error loading kernel:" << name << std::endl;
+        return std::string();
+    }
 	std::string result (
 		(std::istreambuf_iterator<char> (in)),
 		std::istreambuf_iterator<char> ());

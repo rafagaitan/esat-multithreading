@@ -3,14 +3,13 @@ find_package(OpenCL)
 find_package(OpenGL)
 
 SET(FILES
-    session6.cpp
     session8.cpp
     session10.cpp
 )
 
 SET(HEADERS
-    config.h
-    OpenCLUtils.h
+    Config.hpp
+    OpenCLUtils.hpp
 )
 
 SET(OPENCL_SOURCES
@@ -29,13 +28,14 @@ FOREACH(F ${FILES})
     )
 
     include_directories(
+       ${CMAKE_SOURCE_DIR}/Multithreading
        ${CMAKE_CURRENT_SOURCE_DIR}
        ${OPENCL_INCLUDE_DIR}
     )
 
     SET(LIBRARIES 
         ${OPENCL_LIBRARIES}
-		${OPENGL_LIBRARIES}
+        ${OPENGL_LIBRARIES}
     )
 
     if(APP_NAME MATCHES "session10")
@@ -43,12 +43,17 @@ FOREACH(F ${FILES})
 		
 		set(LIBRARIES ${LIBRARIES} hdk ${GLEW_LIBRARIES})
 	    set(SOURCES ${SOURCES} OpenGLUtils.cpp)
-		set(HEADERS ${HEADERS} OpenGLUtils.h)
+		set(HEADERS ${HEADERS} OpenGLUtils.hpp)
 		include_directories(
 		   ${OPENGL_INCLUDE_DIR}
 	       ${CMAKE_SOURCE_DIR}/OpenGL 
 		   ${CMAKE_SOURCE_DIR}/deps/i386-VC120/include
 		   ${GLFW_INCLUDE_DIR})
+		FOREACH(BIN ${BIN_PATH})
+			INSTALL(FILES Fragment.glsl Vertex.glsl
+				DESTINATION ${BIN} COMPONENT ${COMP}
+			)
+		ENDFOREACH()
     endif()
 
     source_group("OpenCL Source Files" FILES ${OPENCL_SOURCES})
@@ -60,4 +65,10 @@ FOREACH(F ${FILES})
     SETUP_LAUNCHER(${APP_NAME}_opencl opencl)
 
 ENDFOREACH(F)
+
+FOREACH(BIN ${BIN_PATH})
+	INSTALL(FILES ${OPENCL_SOURCES}
+		DESTINATION ${BIN} COMPONENT ${COMP}
+	)
+ENDFOREACH()
 

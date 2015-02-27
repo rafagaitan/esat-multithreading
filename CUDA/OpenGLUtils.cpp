@@ -49,7 +49,7 @@
 #include <iterator>
 #include <fstream>
 
-#include "OpenGLUtils.h"
+#include "OpenGLUtils.hpp"
 
 using namespace opengl;
 

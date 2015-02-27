@@ -73,7 +73,7 @@
 #  define S_ISDIR(mode)    (mode&__S_IFDIR)
 #endif
 
-#include <mtUtils/FileUtils.h>
+#include <mtUtils/FileUtils.hpp>
 
 static const char * const PATH_SEPARATORS = "/\\";
 	

@@ -51,9 +51,9 @@
 #include <numeric>
 #include <algorithm>
 
-#include <mtUtils/ScopedThread.h>
-#include <mtUtils/ThreadSafeStack.h>
-#include <mtUtils/ThreadSafeQueue.h>
+#include <mtUtils/ScopedThread.hpp>
+#include <mtUtils/ThreadSafeStack.hpp>
+#include <mtUtils/ThreadSafeQueue.hpp>
 
 
 template <typename T, typename Container=std::list<T> >

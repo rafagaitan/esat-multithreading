@@ -7,7 +7,7 @@ Contact: iscaru1988@gmail.com
 #ifndef __WINDOW_H__
 #define __WINDOW_H__ 1
 
-#include "Export.h"
+#include "Export.hpp"
 #include "types.hpp"
 #include <glm/glm.hpp>
 
@@ -35,7 +35,7 @@ public:
     \param height Specifies the window height.
     \param mode Specifies if it will be windowed or fullscreen, by default it is windowed (See the ScreenType enum).
     */
-    ubyte Init(int32 width, int32 height, const char* title, ubyte screenOpcs = 0);
+    bool Init(int32 width, int32 height, const char* title, ubyte screenOpcs = 0);
 
     //!Processes all the events since the last call of this function.. IT IS CALLED AUTOMATICALLY WHEN WE CALL THE swap() FUNCTION.
     //void ProcessEvents();

@@ -48,8 +48,8 @@
 // hdk includes
 #include <window.hpp>
 
-#include "CUDAUtils.h"
-#include "OpenGLUtils.h"
+#include "CUDAUtils.hpp"
+#include "OpenGLUtils.hpp"
 #include "ComputeVertices.cuh"
 
 const float ViewWidth = 800;
@@ -147,7 +147,7 @@ public:
         glVertexAttribPointer(_vertexPositionCULocation, 4, GL_FLOAT, false, sizeof(float4), NULL);
 
         // state
-        glPointSize(2.0f);
+        glPointSize(1.0f);
         glUniform4f(_diffuseColorCULocation, 0.75, 0.75, 0.75, 1);
         glUniform4f(_lightColorCULocation, 1, 1, 1, 1);
         glUniform4f(_ambientColorCULocation, 0, 0, 0, 1);

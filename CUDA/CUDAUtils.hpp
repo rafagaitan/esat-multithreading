@@ -42,9 +42,12 @@
 #include <string>
 #include <sstream>
 
+#include "cuda.h"
 #include "cuda_runtime.h"
 
-#include "config.h"
+#include "Config.hpp"
+
+
 
 #ifdef CUDAUTILS_USE_EXCEPTIONS
 namespace cuda 
@@ -52,25 +55,32 @@ namespace cuda
     struct cuda_exception: public std::exception
     {
         cuda_exception(const std::string& msg):_msg(msg) { }
-        virtual const char* what() const override { return _msg.c_str(); }
+        ~cuda_exception() throw() { }
+        virtual const char* what() const throw() { return _msg.c_str(); }
         std::string _msg;
     };
 }
-#define CUDAUTIL_THROW true
+#define CUDAUTIL_THROW(msg) throw cuda::cuda_exception(msg);
 #else
-#define CUDAUTIL_THROW false
+#define CUDAUTIL_THROW(msg) std::cerr << msg << std::endl; return false;
 #endif
+
 namespace cuda 
 {
-    template<bool throwException = CUDAUTIL_THROW>
     class Check
     {
     public:
-        static bool CUDAError(const cudaError_t& cudaStatus, const std::string& msg)
+        inline static bool CUDAError(const CUresult& cudaStatus, const std::string& msg)
+        {
+            if (cudaStatus != CUDA_SUCCESS) {
+                CUDAUTIL_THROW(msg);
+            }
+            return true;
+        }
+        inline static bool CUDAError(const cudaError_t& cudaStatus, const std::string& msg)
         {
             if (cudaStatus != cudaSuccess) { 
-                if(throwException) throw cuda_exception(msg);
-                else return false;
+                CUDAUTIL_THROW(msg);
             }
             return true;
         }
@@ -102,22 +112,22 @@ namespace cuda
         Object():_valid(false) { }
         bool valid() { return _valid; }
         virtual ~Object() { }
-        template<bool throwException, typename Arg1>
+        template<typename Arg1>
         inline bool validate(const cudaError_t& cudaStatus, const Arg1& arg1)
         {
-            _valid =  Check<throwException>::CUDAError(cudaStatus, arg1);
+            _valid =  Check::CUDAError(cudaStatus, arg1);
             return _valid;
         }
-        template<bool throwException, typename Arg1, typename Arg2>
+        template<typename Arg1, typename Arg2>
         inline bool validate(const cudaError_t& cudaStatus, const Arg1& arg1, const Arg2& arg2)
         {
-            _valid = Check<throwException>::CUDAError(cudaStatus, arg1, arg2);
+            _valid = Check::CUDAError(cudaStatus, arg1, arg2);
             return _valid;
         }
-        template<bool throwException, typename Arg1, typename Arg2, typename Arg3>
+        template<typename Arg1, typename Arg2, typename Arg3>
         inline bool validate(const cudaError_t& cudaStatus, const Arg1& arg1, const Arg2& arg2, const Arg3& arg3)
         {
-            _valid =  Check<throwException>::CUDAError(cudaStatus, arg1, arg2, arg3);
+            _valid =  Check::CUDAError(cudaStatus, arg1, arg2, arg3);
             return _valid;
         }
     private:
@@ -128,13 +138,19 @@ namespace cuda
     {
         Device(unsigned int id): _id(id)
         {
-            validate<false>(cudaSetDevice(_id), "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
+            validate(cudaSetDevice(_id), "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
         }
         virtual ~Device()
         {
             // cudaDeviceReset must be called before exiting in order for profiling and
             // tracing tools such as Nsight and Visual Profiler to show complete traces.
-             Check<false>::CUDAError(cudaDeviceReset(), "cudaDeviceReset failed!");
+            try {
+                Check::CUDAError(cudaDeviceReset(), "cudaDeviceReset failed!");
+            }
+            catch (std::exception& e)
+            {
+                std::cerr << "Exception in device destructor: " << e.what() << std::endl;
+            }
         }
 
         unsigned int _id;
@@ -147,12 +163,18 @@ namespace cuda
             _devData(0),
             _size(size)
         {
-            validate<false>(cudaMalloc((void**)&_devData, size * sizeof(T)),"cudaMalloc failed!");
+            validate(cudaMalloc((void**)&_devData, size * sizeof(T)),"cudaMalloc failed!");
         }
 
         virtual ~Buffer()
         {
-            cudaFree(_devData);
+            try {
+                Check::CUDAError(cudaFree(_devData), "cudaFree failed!");
+            }
+            catch (std::exception& e)
+            {
+                std::cerr << "Exception in Buffer destructor: " << e.what() << std::endl;
+            }
         }
 
         operator T*()
@@ -172,12 +194,12 @@ namespace cuda
 
         void assign(const T* data)
         {
-            validate<CUDAUTIL_THROW>(cudaMemcpy(_devData, data, _size * sizeof(T), cudaMemcpyHostToDevice),"cudaMemcpy to device failed!");
+            validate(cudaMemcpy(_devData, data, _size * sizeof(T), cudaMemcpyHostToDevice),"cudaMemcpy to device failed!");
         }
 
         void retrieve(T* data)
         {
-            validate<CUDAUTIL_THROW>(cudaMemcpy(data, _devData, _size * sizeof(T), cudaMemcpyDeviceToHost), "cudaMemcpy from device failed!");
+            validate(cudaMemcpy(data, _devData, _size * sizeof(T), cudaMemcpyDeviceToHost), "cudaMemcpy from device failed!");
         }
 
         T*     _devData;

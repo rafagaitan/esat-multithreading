@@ -40,7 +40,7 @@
 #include <atomic>
 #include <condition_variable>
 
-#include <mtUtils/Export.h>
+#include <mtUtils/Export.hpp>
 
 class ESAT_EXPORT Barrier
 {

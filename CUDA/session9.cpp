@@ -38,16 +38,108 @@
 #include <iostream>
 #include <fstream>
 
+#include <cuda.h>
 #include "cuda_runtime.h"
 
-#include <mtUtils/Algorithms.h>
+#include <mtUtils/Algorithms.hpp>
 
-#include "CUDAUtils.h"
-#include "Matrix.h"
+#include "CUDAUtils.hpp"
+#include "Matrix.hpp"
 #include "MatrixMult.cuh"
 
-namespace test_runtime_api
+namespace test_cuda_apis
 {
+    void test_driver_api()
+    {
+        CUdevice cuDevice;
+        CUcontext cuContext;
+        CUmodule cuModule;
+        size_t totalGlobalMem;
+        CUfunction matrixMult = 0;
+        // cuda driver api intialization
+        {
+            int major = 0, minor = 0;
+            char deviceName[100];
+
+            cuda::Check::CUDAError(cuInit(0), "Error intializing cuda");
+            int deviceCount;
+            cuda::Check::CUDAError(cuDeviceGetCount(&deviceCount), "Error getting the number of devices");
+            if (deviceCount <= 0)
+            {
+                std::cerr << "No devices found" << std::endl;
+                return;
+            }
+
+            cuDeviceGet(&cuDevice, 0);
+
+            // get compute capabilities and the devicename
+            cuda::Check::CUDAError(cuDeviceComputeCapability(&major, &minor, cuDevice), "Error getting Device compute capability");
+            cuda::Check::CUDAError(cuDeviceGetName(deviceName, 256, cuDevice), "Error getting device name");
+            std::cout << "> GPU Device has SM " << major << "." << minor << " compute capability" << std::endl;
+
+            cuda::Check::CUDAError(cuDeviceTotalMem(&totalGlobalMem, cuDevice), "Error getting totat global memory");
+            std::cout << "  Total amount of global memory:     " << (unsigned long long)totalGlobalMem << " bytes" << std::endl;
+            std::string tmp = (totalGlobalMem > (unsigned long long)4 * 1024 * 1024 * 1024L) ? "YES" : "NO";
+            std::cout << "  64-bit Memory Address:             " << tmp << std::endl;
+
+            cuda::Check::CUDAError(cuCtxCreate(&cuContext, 0, cuDevice), "Error creating the context");
+        }
+        // Compile and get the function
+        {
+            std::string module_path = "MatrixMult.cubin";
+            std::cout << "> initCUDA loading module: " << module_path << std::endl;
+
+            cuda::Check::CUDAError(cuModuleLoad(&cuModule, module_path.c_str()), "Error loading module");
+
+            cuda::Check::CUDAError(cuModuleGetFunction(&matrixMult, cuModule, "MatrixMultKernelSimpleDriverAPI"), "Error retrieving the function");
+        }
+        // Call the kernel
+        {
+            int WIDTH = BLOCK_SIZE;
+            int HEIGHT = BLOCK_SIZE;
+            std::stringstream text;
+            text << "CUDA Matrix Multiplication (" << WIDTH << "x" << WIDTH << ") Simple method Multiplication time";
+            HostMatrix<float> M(WIDTH, HEIGHT); M.fillWithRandomData(); //M.print(std::cout); 
+            HostMatrix<float> N(WIDTH, HEIGHT); N.fill_diagonal(2); //N.print(std::cout); 
+            HostMatrix<float> C(WIDTH, HEIGHT);
+            {
+                ScopedTimer t(text.str());
+
+                // allocate device memory
+                CUdeviceptr d_M;
+                cuda::Check::CUDAError(cuMemAlloc(&d_M, M.sizeInBytes()), "Error allocating memory");
+                CUdeviceptr d_N;
+                cuda::Check::CUDAError(cuMemAlloc(&d_N, N.sizeInBytes()), "Error allocating memory");
+
+                // copy host memory to device
+                cuda::Check::CUDAError(cuMemcpyHtoD(d_M, M, M.sizeInBytes()), "Error uploading memory to device");
+                cuda::Check::CUDAError(cuMemcpyHtoD(d_N, N, N.sizeInBytes()), "Error uploading memory to device");
+
+                // allocate device memory for result
+                CUdeviceptr d_C;
+                cuda::Check::CUDAError(cuMemAlloc(&d_C, C.sizeInBytes()), "Error allocating memory");
+
+
+                dim3 block(BLOCK_SIZE, BLOCK_SIZE, 1);
+                dim3 grid(C.width_ / BLOCK_SIZE, C.height_ / BLOCK_SIZE, 1);
+                void *args[6] = { &d_M, &d_N, &d_C, &WIDTH, &WIDTH, &WIDTH};
+
+                // new CUDA 4.0 Driver API Kernel launch call
+                cuda::Check::CUDAError(cuLaunchKernel(
+                    matrixMult,                                     // Selected kernel function
+                    grid.x, grid.y, grid.z,                         // grid config 
+                    block.x, block.y, block.z,                      // block config
+                    2 * BLOCK_SIZE*BLOCK_SIZE*sizeof(float),        
+                    NULL, args, NULL), "Error executing Kernel");
+
+                cuda::Check::CUDAError(cuMemcpyDtoH((void *)C, d_C, C.sizeInBytes()),"Error downloading memory to host");
+            }
+            C.print(std::cout);
+        }
+
+        cuCtxDestroy(cuContext);
+    }
+
     void test_runtime_api()
     {
         try
@@ -100,9 +192,24 @@ namespace test_runtime_api
 int main()
 {
     {
+        try
+        {
+            std::cout << "Test Driver API, ready?";
+            std::cin.ignore();
+            test_cuda_apis::test_driver_api();
+        }
+        catch (cuda::cuda_exception& e)
+        {
+            std::cerr << e.what() << std::endl;
+        }
+    }
+    {
         std::cout << "Test Runtime API, ready?";
         std::cin.ignore();
-        test_runtime_api::test_runtime_api();
+        test_cuda_apis::test_runtime_api();
+    }
+    {
+
     }
     return 0;
 }

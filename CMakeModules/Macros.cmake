@@ -27,7 +27,7 @@ MACRO(CONFIGURE_DEFAULTS)
     ENDIF()
    
     IF(MSVC OR MSVC_IDE)
-        SET(EXTRA_CXX_FLAGS "/Wall /W4 /EHsc")
+        SET(EXTRA_CXX_FLAGS "/Wall /W3 /EHsc")
         ADD_DEFINITIONS("-DWIN32")
         if( MSVC_VERSION LESS 1700 )       # VC10-/VS2010- 
 			message(FATAL_ERROR "The project requires C++11 features. " 

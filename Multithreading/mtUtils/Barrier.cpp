@@ -35,7 +35,7 @@
        |  http://www.esat.es/estudios/programacion-multihilo/?pnt=621  |
        -----------------------------------------------------------------
 **********************************************************************************/
-#include <mtUtils/Barrier.h>
+#include <mtUtils/Barrier.hpp>
 
 Barrier::Barrier(unsigned int count):
    _count(count), 

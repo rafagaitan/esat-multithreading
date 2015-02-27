@@ -35,16 +35,18 @@
        |  http://www.esat.es/estudios/programacion-multihilo/?pnt=621  |
        -----------------------------------------------------------------
 **********************************************************************************/
-#pragma once
+#ifndef _GL_SHADER_HELPER_H_
+#define _GL_SHADER_HELPER_H_
 
 #include <string>
 
-#include <mtUtils/Export.h>
+#include <gl/glew.h>
 
-namespace mtUtils
-{	
-	extern ESAT_EXPORT std::string getFilePath(const std::string& fileName);
-	extern ESAT_EXPORT void makeDirectory( const std::string &path );
-	extern ESAT_EXPORT void makeDirectoryForFile( const std::string &path );
-	extern ESAT_EXPORT bool fileExists(const std::string &filename);
+namespace opengl
+{
+    bool printShaderInfoLog(GLuint obj);
+    std::string loadShader(const char* name);
+    bool CompileGLShaderFromSource(GLuint Shader, const char* SourceCode);
+    bool CompileGLShaderFromFile(GLuint Shader, const char* Filename);
 }
+#endif

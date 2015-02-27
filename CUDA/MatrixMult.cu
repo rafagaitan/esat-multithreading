@@ -41,8 +41,8 @@
 #include <cuda.h>
 #include <device_launch_parameters.h>
 
-#include "CUDAUtils.h"
-#include "Matrix.h"
+#include "CUDAUtils.hpp"
+#include "Matrix.hpp"
 #include "MatrixMult.cuh"
 
 
@@ -112,7 +112,7 @@ struct DeviceMatrix
 typedef DeviceMatrix<float> DeviceMatrixf; 
 
 
-__global__ void MatrixMultKernelComplex(Matrixf M, Matrixf N, Matrixf C)
+extern "C" __global__ void MatrixMultKernelComplex(Matrixf M, Matrixf N, Matrixf C)
 {
     // Block row and column
     int blockRow = blockIdx.y;
@@ -158,7 +158,7 @@ __global__ void MatrixMultKernelComplex(Matrixf M, Matrixf N, Matrixf C)
     __syncthreads();
 }
 
-__global__ void MatrixMultKernelSimple(Matrixf M, Matrixf N, Matrixf C)
+extern "C"  __global__ void MatrixMultKernelSimple(Matrixf M, Matrixf N, Matrixf C)
 {
     // Each thread computes one element of C
     // by accumulating results into Cvalue
@@ -175,12 +175,27 @@ __global__ void MatrixMultKernelSimple(Matrixf M, Matrixf N, Matrixf C)
     C.setData(row,col, Cvalue);
 }
 
-void MatrixMult(const HostMatrix<float>& M, const HostMatrix<float>& N, HostMatrix<float>& P, bool complexMult)
+extern "C"  __global__ void MatrixMultKernelSimpleDriverAPI(float* M, float* N, float* C, int M_width, int N_width, int C_width)
 {
-    if(M.width_%BLOCK_SIZE != 0) throw cuda::cuda_exception("Matrix M width is not multiple of BLOCK_SIZE");
-    if(M.height_%BLOCK_SIZE != 0) throw cuda::cuda_exception("Matrix M width is not multiple of BLOCK_SIZE");
-    if(N.width_%BLOCK_SIZE != 0) throw cuda::cuda_exception("Matrix N width is not multiple of BLOCK_SIZE");
-    if(N.height_%BLOCK_SIZE != 0) throw cuda::cuda_exception("Matrix N width is not multiple of BLOCK_SIZE");
+    // Each thread computes one element of C
+    // by accumulating results into Cvalue
+    float Cvalue = 0.0;
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    for (int e = 0; e < M_width; ++e)
+    {
+        Cvalue += (M[row * M_width + e]) * (N[e * N_width + col]);
+        
+    }
+    C[row * C_width + col] = Cvalue;
+}
+
+bool MatrixMult(const HostMatrix<float>& M, const HostMatrix<float>& N, HostMatrix<float>& P, bool complexMult)
+{
+    if(M.width_%BLOCK_SIZE != 0) CUDAUTIL_THROW("Matrix M width is not multiple of BLOCK_SIZE");
+    if (M.height_%BLOCK_SIZE != 0) CUDAUTIL_THROW("Matrix M width is not multiple of BLOCK_SIZE");
+    if (N.width_%BLOCK_SIZE != 0) CUDAUTIL_THROW("Matrix N width is not multiple of BLOCK_SIZE");
+    if (N.height_%BLOCK_SIZE != 0) CUDAUTIL_THROW("Matrix N width is not multiple of BLOCK_SIZE");
 
     DeviceMatrix<float> Md(M.width_,M.height_); Md.setElements(M);
     DeviceMatrix<float> Nd(N.width_,N.height_); Nd.setElements(N);
@@ -202,12 +217,15 @@ void MatrixMult(const HostMatrix<float>& M, const HostMatrix<float>& N, HostMatr
     }
     // Check for any errors launching the kernel
     cudaError_t cudaStatus = cudaGetLastError();
-    cuda::Check<CUDAUTIL_THROW>::CUDAError(cudaStatus, "Kernel launch failed",cudaGetErrorString(cudaStatus));   
+    bool bOk = cuda::Check::CUDAError(cudaStatus, "Kernel launch failed",cudaGetErrorString(cudaStatus));   
     // cudaDeviceSynchronize waits for the kernel to finish, and returns
     // any errors encountered during the launch.
-    cuda::Check<CUDAUTIL_THROW>::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching addKernel!");
+    bOk = bOk && cuda::Check::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching addKernel!");
 
-    Pd.getElements(P);
+    if (bOk)
+        Pd.getElements(P);
+
+    return bOk;
 }
 
 

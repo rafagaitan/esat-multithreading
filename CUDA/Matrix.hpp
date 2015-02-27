@@ -86,6 +86,11 @@ struct HostMatrix
         }
     }
 
+    size_t sizeInBytes()
+    {
+        return size_*sizeof(T);
+    }
+
     void identity()
     {
         int i=0;
@@ -148,6 +153,17 @@ struct HostMatrix
             os <<" |" << std::endl;
         }
     }
+
+    operator const T* ()
+    {
+        return elements_.data();
+    }
+
+    operator T* ()
+    {
+        return elements_.data();
+    }
+
 
     int            width_;
     int            height_;

@@ -38,7 +38,7 @@
 #include <cuda.h>
 #include <device_launch_parameters.h>
 
-#include "CUDAUtils.h"
+#include "CUDAUtils.hpp"
 #include "ComputeVertices.cuh"
 
 __global__ void computeVertices_kernel(float4* pos, unsigned int width, unsigned int height, float time)
@@ -74,5 +74,5 @@ void computeVertices(float4* pos, unsigned int width, unsigned int height, float
     //cuda::Check<CUDAUTIL_THROW>::CUDAError(cudaStatus, "Kernel launch failed: ",cudaGetErrorString(cudaStatus));   
     // cudaDeviceSynchronize waits for the kernel to finish, and returns
     // any errors encountered during the launch.
-    cuda::Check<CUDAUTIL_THROW>::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching addKernel!");
+    cuda::Check::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching addKernel!");
 }

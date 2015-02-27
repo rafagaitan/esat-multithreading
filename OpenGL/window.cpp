@@ -90,10 +90,10 @@ Window::Window():
     static GLFWInitializer s_glfwInit;
 }
 
-ubyte Window::Init(int32 width, int32 height,const char* title, ubyte screenOpcs)
+bool Window::Init(int32 width, int32 height,const char* title, ubyte /*screenOpcs*/)
 {
     if(windowHandler)
-        return 0;
+        return true;
 
     windowHandler = glfwCreateWindow(width, height, title, NULL, NULL);
 
@@ -101,7 +101,7 @@ ubyte Window::Init(int32 width, int32 height,const char* title, ubyte screenOpcs
     if (!windowHandler){
 
         std::cout<<"Error opening window\n"<<std::endl;
-        return -1;
+        return false;
 
         //If the window opens OK we return 0
     }
@@ -121,7 +121,7 @@ ubyte Window::Init(int32 width, int32 height,const char* title, ubyte screenOpcs
     // inicializamos glew
     static GLEWinitializer s_glewInit;
 
-    return 0;
+    return true;
 }
 
 Window::~Window(){
@@ -142,7 +142,7 @@ void Window::Swap(){
 
 //!Sets the clear color.*/
 /*!Sets the new RGBA color that will be used to clear the screen.*/
-void Window::SetClearColor(glm::vec4& newClearColor){
+void Window::SetClearColor(glm::vec4& /*newClearColor*/){
 
 }
 

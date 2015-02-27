@@ -1,64 +1,95 @@
-/*******************************************************************************
-   The MIT License (MIT)
-
-   Copyright (c) 2014 Rafael Gaitan <rafa.gaitan@mirage-tech.com>
-                                    http://www.mirage-tech.com
-
-   Permission is hereby granted, free of charge, to any person obtaining a copy
-   of this software and associated documentation files (the "Software"), to deal
-   in the Software without restriction, including without limitation the rights
-   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-   copies of the Software, and to permit persons to whom the Software is
-   furnished to do so, subject to the following conditions:
-
-   The above copyright notice and this permission notice shall be included in
-   all copies or substantial portions of the Software.
-
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-   THE SOFTWARE.
-
-   -----------------------------------------------------------------------------
-   Additional Notes:
-
-   Code for the Multithreading and Parallel Computing Course at ESAT
-               -------------------------------
-               |     http://www.esat.es      |
-               -------------------------------
-
-   more information of the course at:
-       -----------------------------------------------------------------
-       |  http://www.esat.es/estudios/programacion-multihilo/?pnt=621  |
-       -----------------------------------------------------------------
-**********************************************************************************/
-
+#define NOMINMAX
+#include <algorithm>
 #include <iostream>
 
-#include "CUDAUtils.h"
+#include "CUDAUtils.hpp"
 #include "SumIntVectors.cuh"
 #include "device_launch_parameters.h"
 
 
-__global__ void addKernel(int *c, const int *a, const int *b)
+__global__ void addKernel(float *c, const float *a, const float *b)
 {
     int i = threadIdx.x;
     c[i] = a[i] + b[i];
 }
 
+__global__ void addKernelV2(float *c, const float *a, const float *b)
+{
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    c[i] = a[i] + b[i];
+}
+
+__global__ void fillKernel(float *a)
+{
+    int i = threadIdx.x;
+    a[i] = sin((double)i)*sin((double)i);
+}
+
+__global__ void fillKernelV2(float *a, float* b)
+{
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    a[i] = sin((double)i)*sin((double)i);
+    b[i] = cos((double)i)*cos((double)i);
+}
+
+__global__ void fillAndAddKernelV2(float* c, float *a, float* b)
+{
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    a[i] = sin((double)i)*sin((double)i);
+    b[i] = cos((double)i)*cos((double)i);
+    c[i] = a[i] + b[i];
+}
+
+const unsigned int BLOCK_SIZE = 1024;
+
+cudaError_t fillWithCuda(float *a, unsigned int size)
+{
+    cuda::Buffer<float> buffer_a(size);
+    buffer_a.assign(a);
+
+    fillKernel<<<1, size>>>(buffer_a);
+
+    cudaError_t cudaStatus = cudaGetLastError();
+
+    cuda::Check::CUDAError(cudaStatus, "fillKernel launch failed", cudaGetErrorString(cudaStatus));
+
+    cuda::Check::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching fillKernel!");
+
+    buffer_a.retrieve(a);
+    return cudaStatus;
+}
+
+cudaError_t fillWithCudaV2(float* a, float* b, unsigned int size)
+{
+    cuda::Buffer<float> buffer_a(size);
+    buffer_a.assign(a);
+    cuda::Buffer<float> buffer_b(size);
+    buffer_b.assign(b);
+
+    unsigned int totalBlocks = size / BLOCK_SIZE;
+
+    if (size % BLOCK_SIZE != 0)
+        totalBlocks++;
+
+    fillKernelV2 << <totalBlocks, BLOCK_SIZE >> >(buffer_a, buffer_b);
+
+    cudaError_t cudaStatus = cudaGetLastError();
+    cuda::Check::CUDAError(cudaGetLastError(), "fillKernel launch failed", cudaGetErrorString(cudaStatus));
+    cuda::Check::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching fillKernel!");
+
+    buffer_a.retrieve(a);
+    buffer_b.retrieve(b);
+    return cudaStatus;
+}
+
 // Helper function for using CUDA to add vectors in parallel.
-cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size)
+cudaError_t addWithCuda(float *c, const float *a, const float *b, unsigned int size)
 {
     cudaError_t cudaStatus;
-    // Choose which GPU to run on, change this on a multi-GPU system.
-    cuda::Device device(0);
    // Allocate GPU buffers for three vectors (two input, one output)   
-    cuda::Buffer<int> buffer_c(size);
-    cuda::Buffer<int> buffer_a(size);
-    cuda::Buffer<int> buffer_b(size);
+    cuda::Buffer<float> buffer_c(size);
+    cuda::Buffer<float> buffer_a(size);
+    cuda::Buffer<float> buffer_b(size);
     // Copy input vectors from host memory to GPU buffers.
     buffer_a.assign(a);
     buffer_b.assign(b);
@@ -66,14 +97,110 @@ cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size)
     addKernel<<<1, size>>>(buffer_c, buffer_a, buffer_b);
     // Check for any errors launching the kernel
     cudaStatus = cudaGetLastError();
-    cuda::Check<CUDAUTIL_THROW>::CUDAError(cudaStatus, "addKernel launch failed",cudaGetErrorString(cudaStatus));   
+    cuda::Check::CUDAError(cudaStatus, "addKernel launch failed",cudaGetErrorString(cudaStatus));   
     // cudaDeviceSynchronize waits for the kernel to finish, and returns
     // any errors encountered during the launch.
-    cuda::Check<CUDAUTIL_THROW>::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching addKernel!");
+    cuda::Check::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching addKernel!");
     // Copy output vector from GPU buffer to host memory.
     buffer_c.retrieve(c);
     return cudaStatus;
 }
 
+cudaError_t addWithCudaV2(float *c, const float *a, const float *b, unsigned int size)
+{
+
+    // Allocate GPU buffers for three vectors (two input, one output)   
+    cuda::Buffer<float> buffer_c(size);
+    cuda::Buffer<float> buffer_a(size);
+    cuda::Buffer<float> buffer_b(size);
+    // Copy input vectors from host memory to GPU buffers.
+    buffer_a.assign(a);
+    buffer_b.assign(b);
+    // Launch a kernel on the GPU with size / BLOC_SIZE with BLOCK_SIZE threads per block.
+    int totalBlocks = size / BLOCK_SIZE;
+
+    if (size % BLOCK_SIZE != 0)
+        totalBlocks++;
+    addKernelV2 << < totalBlocks, BLOCK_SIZE >> >(buffer_c, buffer_a, buffer_b);
+    // Check for any errors launching the kernel
+    cudaError_t cudaStatus = cudaGetLastError();
+    cuda::Check::CUDAError(cudaStatus, "addKernel launch failed", cudaGetErrorString(cudaStatus));
+    // cudaDeviceSynchronize waits for the kernel to finish, and returns
+    // any errors encountered during the launch.
+    cuda::Check::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching addKernel!");
+    // Copy output vector from GPU buffer to host memory.
+    buffer_c.retrieve(c);
+    return cudaStatus;
+}
+
+cudaError_t fillThenAddWithCudaV2(float *c, float *a, float *b, unsigned int size)
+{
+
+    // Allocate GPU buffers for three vectors (two input, one output)   
+    cuda::Buffer<float> buffer_c(size);
+    cuda::Buffer<float> buffer_a(size);
+    cuda::Buffer<float> buffer_b(size);
+    // Copy input vectors from host memory to GPU buffers.
+    buffer_a.assign(a);
+    buffer_b.assign(b);
+    // Launch a kernel on the GPU with size / BLOC_SIZE with BLOCK_SIZE threads per block.
+    int totalBlocks = size / BLOCK_SIZE;
+
+    if (size % BLOCK_SIZE != 0)
+        totalBlocks++;
+
+    fillKernelV2 << < totalBlocks, BLOCK_SIZE >> >(buffer_a, buffer_b);
+
+    cudaError_t cudaStatus = cudaGetLastError();
+    cuda::Check::CUDAError(cudaStatus, "fillKerneV2 launch failed", cudaGetErrorString(cudaStatus));
+
+    // cudaDeviceSynchronize waits for the kernel to finish, and returns
+    // any errors encountered during the launch.
+    cuda::Check::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching fillKernelV2!");
+
+    addKernelV2 << < totalBlocks, BLOCK_SIZE >> >(buffer_c, buffer_a, buffer_b);
+    // Check for any errors launching the kernel
+    cudaStatus = cudaGetLastError();
+    cuda::Check::CUDAError(cudaStatus, "addKernelV2 launch failed", cudaGetErrorString(cudaStatus));
+    // cudaDeviceSynchronize waits for the kernel to finish, and returns
+    // any errors encountered during the launch.
+    cuda::Check::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching addKernelV2!");
+    // Copy output vector from GPU buffer to host memory.
+    buffer_a.retrieve(a);
+    buffer_b.retrieve(b);
+    buffer_c.retrieve(c);
+    return cudaStatus;
+}
+
+
+cudaError_t fillAndAddWithCudaV2(float *c, float *a, float *b, unsigned int size)
+{
+
+    // Allocate GPU buffers for three vectors (two input, one output)   
+    cuda::Buffer<float> buffer_c(size);
+    cuda::Buffer<float> buffer_a(size);
+    cuda::Buffer<float> buffer_b(size);
+    // Copy input vectors from host memory to GPU buffers.
+    buffer_a.assign(a);
+    buffer_b.assign(b);
+    // Launch a kernel on the GPU with size / BLOC_SIZE with BLOCK_SIZE threads per block.
+    int totalBlocks = size / BLOCK_SIZE;
+
+    if (size % BLOCK_SIZE != 0)
+        totalBlocks++;
+
+    fillAndAddKernelV2 << < totalBlocks, BLOCK_SIZE >> >(buffer_c, buffer_a, buffer_b);
+    // Check for any errors launching the kernel
+    cudaError_t cudaStatus = cudaGetLastError();
+    cuda::Check::CUDAError(cudaStatus, "addKernelV2 launch failed", cudaGetErrorString(cudaStatus));
+    // cudaDeviceSynchronize waits for the kernel to finish, and returns
+    // any errors encountered during the launch.
+    cuda::Check::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching addKernelV2!");
+    // Copy output vector from GPU buffer to host memory.
+    buffer_a.retrieve(a);
+    buffer_b.retrieve(b);
+    buffer_c.retrieve(c);
+    return cudaStatus;
+}
 
 

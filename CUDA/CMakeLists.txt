@@ -1,15 +1,25 @@
 cmake_minimum_required(VERSION 2.8)
 
+IF(APPLE)
+    SET(EXTRA_CXX_FLAGS "-stdlib=libstdc++")
+    SET(EXTRA_LINKER_FLAGS "-stdlib=libstdc++")
+
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CXX_FLAGS}" CACHE STRING "Flags used by the compiler during all build types." FORCE)
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${EXTRA_LINKER_FLAGS}" CACHE STRING "Flags used by the linker." FORCE)
+ENDIF()
+
 # packages                                                                                                                                                                                                 
 find_package(CUDA)
 
+#session 7
 SET(SOURCES
-    session6.cpp
+    session7.cpp
 )
 
 SET(HEADERS
-    config.h
-    CUDAUtils.h
+    Config.hpp
+    CUDAUtils.hpp
+    Multithreading/mtUtils/Algorithms.hpp
 )
 
 SET(CUDA_SOURCES
@@ -27,26 +37,25 @@ include_directories(
 source_group("CUDA Source Files" FILES ${CUDA_SOURCES})
 source_group("CUDA Header Files" FILES ${CUDA_HEADERS})
 
-set(GENCODE_SM10 -gencode=arch=compute_10,code=sm_10 -gencode=arch=compute_10,code=compute_10)
-set(GENCODE_SM13 -gencode=arch=compute_13,code=sm_13 -gencode=arch=compute_13,code=compute_13)
 set(GENCODE_SM20 -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20)
 
-cuda_add_executable(session6_cuda 
+cuda_add_executable(session7_cuda 
 	${CUDA_SOURCES} 
 	${CUDA_HEADERS}
 	${SOURCES} 
 	${HEADERS}
-	OPTIONS ${GENCODE_SM10} ${GENCODE_SM13} ${GENCODE_SM20}
+	OPTIONS  ${GENCODE_SM20}
 )
 
-SET_TARGET_PROPERTIES(session6_cuda PROPERTIES FOLDER "Applications")
+SET_TARGET_PROPERTIES(session7_cuda PROPERTIES FOLDER "Applications")
 
 FOREACH(BIN ${BIN_PATH})
-	INSTALL(TARGETS session6_cuda
+	INSTALL(TARGETS session7_cuda
 		RUNTIME DESTINATION ${BIN} COMPONENT ${COMP}
 	)
 ENDFOREACH()
 
+#session9
 SET(SOURCES
     session9.cpp
 )
@@ -62,7 +71,8 @@ SET(CUDA_HEADERS
 
 SET(HEADERS
     ${HEADERS}
-    Matrix.h
+    Matrix.hpp
+    Multithreading/mtUtils/Algorithms.hpp
 )
 
 source_group("CUDA Source Files" FILES ${CUDA_SOURCES})
@@ -72,16 +82,39 @@ cuda_add_executable(session9_cuda
 	${CUDA_SOURCES} 
 	${CUDA_HEADERS}
 	${SOURCES} 
-	${HEADERS}
-	OPTIONS ${GENCODE_SM10} ${GENCODE_SM13} ${GENCODE_SM20}
+	OPTIONS ${GENCODE_SM20}
 )
 
+FIND_LIBRARY(CUDA_LIB
+    cuda
+    PATHS 
+    ${CUDA_INSTALL_PREFIX}/lib 
+    $ENV{CUDA_PATH}/lib/Win32
+    /Developer/NVIDIA/CUDA-6.5/lib/
+    DOC "\"cuda\" library"
+)
+
+target_link_libraries(session9_cuda ${CUDA_LIB})
+
 SET_TARGET_PROPERTIES(session9_cuda PROPERTIES FOLDER "Applications")
+
+if(WIN32)
+    add_custom_command(TARGET session9_cuda 
+		PRE_BUILD 
+		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build-cubin.bat ${CMAKE_BINARY_DIR}/CUDA 
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+endif()
 
 FOREACH(BIN ${BIN_PATH})
 	INSTALL(TARGETS session9_cuda
 		RUNTIME DESTINATION ${BIN} COMPONENT ${COMP}
 	)
+	IF(WIN32)
+		INSTALL(FILES ${CMAKE_BINARY_DIR}/CUDA/MatrixMult.cubin
+			DESTINATION  ${BIN} COMPONENT ${COMP}
+		)
+	ENDIF()
 ENDFOREACH()
 
 # session 10
@@ -104,9 +137,9 @@ SET(CUDA_HEADERS
 )
 
 SET(HEADERS
-    config.h
-    CUDAUtils.h
-    OpenGLUtils.h
+    Config.hpp
+    CUDAUtils.hpp
+    OpenGLUtils.hpp
 )
 
 source_group("CUDA Source Files" FILES ${CUDA_SOURCES})
@@ -125,7 +158,7 @@ cuda_add_executable(session10_cuda
 	${CUDA_HEADERS}
 	${SOURCES} 
 	${HEADERS}
-	OPTIONS ${GENCODE_SM10} ${GENCODE_SM13} ${GENCODE_SM20}
+	OPTIONS ${GENCODE_SM13} ${GENCODE_SM20}
 )
 set(LIBRARIES ${LIBRARIES} hdk ${GLEW_LIBRARIES})
 target_link_libraries(session10_cuda ${LIBRARIES} hdk ${GLEW_LIBRARIES})

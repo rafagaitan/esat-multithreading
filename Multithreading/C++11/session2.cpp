@@ -48,8 +48,8 @@
 #include <algorithm>
 #include <algorithm>
 
-#include <mtUtils/ScopedThread.h>
-#include <mtUtils/ThreadSafeStack.h>
+#include <mtUtils/ScopedThread.hpp>
+#include <mtUtils/ThreadSafeStack.hpp>
 
 void hard_work()
 {
