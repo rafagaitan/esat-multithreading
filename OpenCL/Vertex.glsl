@@ -1,6 +1,8 @@
-#version 400 compatibility
+//#version 400 compatibility
 
-layout(location=0) in vec4 vertexPosition;
+//layout(location=0) in vec4 vertexPosition;
+
+attribute vec4 vertexPosition;
 
 void main()
 {

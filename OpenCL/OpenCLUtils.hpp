@@ -44,7 +44,7 @@
 
 #include "Config.hpp"
 
-#include <CL/cl.h>
+//#include <CL/cl.h>
 #include "cl.hpp"
 
 namespace opencl
@@ -75,12 +75,12 @@ cl::Context createCLGLContext(cl_device_type type) {
 #if defined(__APPLE__) || defined(__MACOSX)
     // Apple (untested)
     cl_context_properties cps[] = {
-        CL_CGL_SHAREGROUP_KHR,
+        CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
         (cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()),
-        CL_CONTEXT_PLATFORM,
-        (cl_context_properties)(platform)(),
         0
     };
+    cl_context context = clCreateContext(cps, 0, 0, NULL, 0, 0);
+    return cl::Context(context);
 #else
 #ifdef _WIN32
     // Windows
@@ -143,9 +143,6 @@ cl::Context createCLGLContext(cl_device_type type) {
         cl::detail::errHandler(CL_DEVICE_NOT_FOUND, "clCreateContextFromType");
         return cl::Context();
     }
-
-    cps[5] = platform_id;
-    
     return cl::Context(type, cps);
 }
 

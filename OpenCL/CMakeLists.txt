@@ -36,12 +36,12 @@ FOREACH(F ${FILES})
     SET(LIBRARIES 
         ${OPENCL_LIBRARIES}
         ${OPENGL_LIBRARIES}
+        mtUtils
     )
-
     if(APP_NAME MATCHES "session10")
-		find_package(GLEW)
+            find_package(GLEW)
 		
-		set(LIBRARIES ${LIBRARIES} hdk ${GLEW_LIBRARIES})
+            set(LIBRARIES ${LIBRARIES} hdk ${GLEW_LIBRARIES})
 	    set(SOURCES ${SOURCES} OpenGLUtils.cpp)
 		set(HEADERS ${HEADERS} OpenGLUtils.hpp)
 		include_directories(
@@ -61,7 +61,7 @@ FOREACH(F ${FILES})
         set_source_files_properties(${CL_FILE} PROPERTIES HEADER_FILE_ONLY TRUE)
         set(SOURCES ${SOURCES} ${CL_FILE})
     endforeach()
-	ADD_DEFINITIONS(-DRESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
+    ADD_DEFINITIONS(-DRESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
     SETUP_LAUNCHER(${APP_NAME}_opencl opencl)
 
 ENDFOREACH(F)

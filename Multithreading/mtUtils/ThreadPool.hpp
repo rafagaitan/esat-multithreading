@@ -80,10 +80,10 @@ private:
 inline ThreadPool::ThreadPool(size_t threads):
     stop(false),
     tasks(),
-    workers()
+    workers(threads)
 {
     for(size_t i = 0;i<threads;++i)
-        workers.emplace_back(std::thread(
+        workers[i] = std::thread(
             [this]
             {
                 while(!stop)
@@ -91,7 +91,7 @@ inline ThreadPool::ThreadPool(size_t threads):
                     runPendingTask();
                 }
             }
-        ));
+        );
 }
 
 // add new work item to the pool

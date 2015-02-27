@@ -62,11 +62,11 @@ struct GLFWInitializer
         }
 
         //Una vez abierta, inicializamos glew
-        if (glewInit() != GLEW_OK){
-            std::cout << "Failed to initialize GLEW" << std::endl;
-        }else{
-            std::cout << "GLEW initialized correctly" << std::endl;
-        }
+        //if (glewInit() != GLEW_OK){
+        //    std::cout << "Failed to initialize GLEW" << std::endl;
+        //}else{
+        //    std::cout << "GLEW initialized correctly" << std::endl;
+        //}
     }
 };
 

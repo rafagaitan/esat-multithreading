@@ -29,7 +29,7 @@ FIND_PATH(GLFW_INCLUDE_DIR glfw3.h DOC "Path to GLFW include directory."
 )
 
 FIND_LIBRARY(GLFW_LIBRARY DOC "Absolute path to GLFW library."
-  NAMES glfw3dll glfw3 glfw
+  NAMES glfw3dll glfw3
   PATHS
   ${GLFW_DIR}
   $ENV{GLFW_DIR}

@@ -5,6 +5,10 @@
 #include <string>
 #include <atomic>
 #include <future>
+#include <vector>
+
+#include "ThreadPool.hpp"
+
 
 #ifndef __APPLE__
 #include <chrono>
@@ -72,6 +76,7 @@ struct ScopedTimer
 };
 
 #endif
+
 
 template<typename Iterator, typename Func>
 Func parallel_for_each(Iterator first, Iterator last, Func f)

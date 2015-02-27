@@ -99,9 +99,9 @@ int main(int, char**)
                 std::this_thread::yield();
             }
         };
-        std::vector<ScopedThread> threads;
-        for (auto i = 0u; i < std::thread::hardware_concurrency(); i++)
-            threads.emplace_back(std::thread(processing_loop));
+        std::vector<ScopedThread> threads(std::thread::hardware_concurrency());
+        for(auto i=0u;i<std::thread::hardware_concurrency();i++)
+            threads[i] = ScopedThread(processing_loop);
     }
     if (enableCachePingPong)
     {
@@ -116,9 +116,9 @@ int main(int, char**)
                 std::this_thread::yield();
             }
         };
-        std::vector<ScopedThread> threads;
-        for (auto i = 0u; i < std::thread::hardware_concurrency(); i++)
-            threads.emplace_back(std::thread(processing_loop));
+        std::vector<ScopedThread> threads(std::thread::hardware_concurrency());
+        for(auto i=0u;i<std::thread::hardware_concurrency();i++)
+            threads[i] = ScopedThread(processing_loop);
     }
     if (enableFalseSharing)
     {
@@ -138,9 +138,9 @@ int main(int, char**)
                 data[i] *= 2;
             }
         };
-        std::vector<ScopedThread> threads;
-        for (auto i = 0u; i < std::thread::hardware_concurrency(); i++)
-            threads.emplace_back(std::thread(processing_loop));
+        std::vector<ScopedThread> threads(std::thread::hardware_concurrency());
+        for(auto i=0u;i<std::thread::hardware_concurrency();i++)
+            threads[i] = ScopedThread(processing_loop);
         for (unsigned int i = 0; i < data.size(); i++) std::cout << data[i] << ",";
         std::cout << std::endl;
     }
@@ -172,13 +172,13 @@ int main(int, char**)
             }
             std::cout << std::this_thread::get_id() << ":stack is done" << std::endl;
         };
-        std::vector<ScopedThread> producers;
-        std::vector<ScopedThread> consumers;
-        for (auto i = 0; i < 4; i++)
-            consumers.emplace_back(std::thread(popper_function, std::ref(ts)));
+        std::vector<ScopedThread> producers(200);
+        std::vector<ScopedThread> consumers(4);
+        for(auto i=0;i<4;i++)
+            consumers[i] = std::thread(popper_function,std::ref(ts));
 
-        for (auto i = 0; i < 200; i++)
-            producers.emplace_back(std::thread(inserter_function, std::ref(ts), 100));
+        for(auto i=0;i<200;i++)
+            producers[i] = std::thread(inserter_function,std::ref(ts),100);
 
         producers.clear();
         done = true;
@@ -263,30 +263,31 @@ int main(int, char**)
         std::cin.ignore();
 
         Barrier b;
-        std::vector<ScopedThread> threads;
-        for (unsigned int i = 0; i < 4; i++)
+        std::vector<ScopedThread> threads(4);
+        for (unsigned int i = 0; i < threads.size(); i++)
         {
-            threads.emplace_back(std::thread([&]()
+            threads[i] = std::thread([&]()
             {
                 b.wait();
                 std::cout << std::this_thread::get_id() << ":thread synced" << std::endl;
-            }));
+            });
         }
         std::cout << "Waiting 1 second ..." << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));
         b.release();
         threads.clear();
-
+	
+        std::vector<ScopedThread>(20).swap(threads);
         std::cout << "ready to sync with a barrier with limited number of threads?" << std::endl;
         std::cin.ignore();
         Barrier b2(4);
         for (unsigned int i = 0; i < 20; i++)
         {
-            threads.emplace_back(std::thread([&]()
+            threads[i] = std::thread([&]()
             {
                 b2.wait();
                 std::cout << std::this_thread::get_id() << ":thread synced" << std::endl;
-            }));
+            });
         }
         std::cout << "Waiting 1 second ..." << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));

@@ -77,8 +77,9 @@ public:
         if(_t.joinable())
             _t.join();
     }
+    ScopedThread(const ScopedThread& rhs) = delete; // deleted
 private:
-    ScopedThread(const ScopedThread& rhs); // deleted
+    
     ScopedThread& operator=(const ScopedThread& rhs); // deleted
 };
 

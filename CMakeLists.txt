@@ -40,8 +40,9 @@ add_subdirectory(Multithreading)
 add_subdirectory(OpenGL)
 if(WIN32) # temporal until I figure out how to fix building
   add_subdirectory(CUDA)
-  add_subdirectory(OpenCL)
 endif()
+
+add_subdirectory(OpenCL)
 
 INCLUDE(InstallRequiredSystemLibraries)
 
