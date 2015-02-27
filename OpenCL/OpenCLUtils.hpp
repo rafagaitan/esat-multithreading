@@ -139,6 +139,8 @@ cl::Context createCLGLContext(cl_device_type type) {
         }
     }
 
+    cps[5] = platform_id;
+
     if (platform_id == 0) {
         cl::detail::errHandler(CL_DEVICE_NOT_FOUND, "clCreateContextFromType");
         return cl::Context();
