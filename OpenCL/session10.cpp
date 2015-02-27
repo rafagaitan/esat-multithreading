@@ -140,9 +140,11 @@ public:
 
     }
 
-    void OnInit()
+    void OnInit(const Window& view)
     {
-        initGL();
+        int w,h;
+        view.getWindowSize(w, h);
+        initGL(w,h);
         try
         {
             initCL();
@@ -164,10 +166,13 @@ public:
         glDeleteProgram(_renderProgram);
     }
 
-    void OnDraw()
+    void OnDraw(const Window& view)
     {
         float time = std::chrono::duration<float>(std::chrono::system_clock::now() - _startTime).count();
         computeVertices(time);
+        int w,h;
+        view.getWindowSize(w, h);
+        glViewport(0,0, static_cast<GLsizei>(w), static_cast<GLsizei>(h));
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -175,7 +180,7 @@ public:
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        gluPerspective(30,(float)ViewWidth/ViewHeight, 0.1, 1000.0);
+        gluPerspective(30,(float)w/(float)h, 0.1, 1000.0);
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
@@ -232,10 +237,10 @@ protected:
         _kernel_computeVertices.setArg(2, meshHeight);
     }
 
-    void initGL()
+    void initGL(int w, int h)
     {
         glClearColor(0.2f, 0.5f, 0.8f, 1.0f);
-        glViewport(0,0, static_cast<GLsizei>(ViewWidth), static_cast<GLsizei>(ViewHeight)); // TODO catch resize and recompute this
+        glViewport(0,0, static_cast<GLsizei>(w), static_cast<GLsizei>(h)); // TODO catch resize and recompute this
         _renderProgram = createProgram();
         createVBO(&_destVertexVBO,NUM_VERTICES);
     }
@@ -321,12 +326,12 @@ int main()
     view.Init(800,600, "OpenCL-OpenGL Interop Sample");
 
     SceneManager scene;
-    scene.OnInit();
+    scene.OnInit(view);
     
     while (!view.ShouldClose() && ! done)
     {
 
-        scene.OnDraw();
+        scene.OnDraw(view);
         //swap front and back buffers to show the rendered result
         view.Swap();
 

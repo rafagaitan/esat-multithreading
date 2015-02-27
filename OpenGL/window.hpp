@@ -66,6 +66,9 @@ public:
     //!Sets a callback function for key events.
     /*It will call the parametrized funcion every time a key is pressed, the function must be "void funcName(int, int, int)".*/
     void setWindowKeyCallback(CBFunctionKey* cbFunction);
+    
+    // gets the window size
+    void getWindowSize(int& w, int& h) const;
 
 private:
 

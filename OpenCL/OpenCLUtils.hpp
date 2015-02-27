@@ -66,6 +66,47 @@ std::string loadKernel (const char* name)
         std::istreambuf_iterator<char> ());
     return result;
 }
+    
+cl_context_properties getPlaformIdForType(cl_device_type type)
+{
+    std::vector<cl::Platform> platforms;
+    cl::Platform::get(&platforms);
+    cl_int error = CL_SUCCESS;
+    // Check the platforms we found for a device of our specified type
+    cl_context_properties platform_id = 0;
+    for (unsigned int i = 0; i < platforms.size(); i++) {
+        
+        std::vector<cl::Device> devices;
+        
+#if defined(__CL_ENABLE_EXCEPTIONS)
+        try {
+#endif
+            
+            error = platforms[i].getDevices(type, &devices);
+            
+#if defined(__CL_ENABLE_EXCEPTIONS)
+        }
+        catch (cl::Error) {}
+        // Catch if exceptions are enabled as we don't want to exit if first platform has no devices of type
+        // We do error checking next anyway, and can throw there if needed
+#endif
+        
+        // Only squash CL_SUCCESS and CL_DEVICE_NOT_FOUND
+        if (error != CL_SUCCESS && error != CL_DEVICE_NOT_FOUND) {
+            cl::detail::errHandler(error, "clCreateContextFromType");
+        }
+        
+        if (devices.size() > 0) {
+            platform_id = (cl_context_properties)platforms[i]();
+            break;
+        }
+    }
+    if (platform_id == 0) {
+        cl::detail::errHandler(CL_DEVICE_NOT_FOUND, "Not device found for the input type");
+        return 0;
+    }
+    return platform_id;
+}
 
 cl::Context createCLGLContext(cl_device_type type) {
     cl::Platform platform;
@@ -77,10 +118,13 @@ cl::Context createCLGLContext(cl_device_type type) {
     cl_context_properties cps[] = {
         CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
         (cl_context_properties)CGLGetShareGroup(CGLGetCurrentContext()),
+        CL_CONTEXT_PLATFORM,
+        (cl_context_properties)(platform)(),
         0
     };
-    cl_context context = clCreateContext(cps, 0, 0, NULL, 0, 0);
-    return cl::Context(context);
+    
+    cps[3] = getPlaformIdForType(type);
+
 #else
 #ifdef _WIN32
     // Windows
@@ -105,46 +149,9 @@ cl::Context createCLGLContext(cl_device_type type) {
         0
     };
 #endif
+    cps[5] = getPlaformIdForType(type);
 #endif
-    std::vector<cl::Platform> platforms;
-    cl::Platform::get(&platforms);
-    cl_int error = CL_SUCCESS;
-    // Check the platforms we found for a device of our specified type
-    cl_context_properties platform_id = 0;
-    for (unsigned int i = 0; i < platforms.size(); i++) {
-
-        std::vector<cl::Device> devices;
-
-#if defined(__CL_ENABLE_EXCEPTIONS)
-        try {
-#endif
-
-            error = platforms[i].getDevices(type, &devices);
-
-#if defined(__CL_ENABLE_EXCEPTIONS)
-        }
-        catch (cl::Error) {}
-        // Catch if exceptions are enabled as we don't want to exit if first platform has no devices of type
-        // We do error checking next anyway, and can throw there if needed
-#endif
-
-        // Only squash CL_SUCCESS and CL_DEVICE_NOT_FOUND
-        if (error != CL_SUCCESS && error != CL_DEVICE_NOT_FOUND) {
-            cl::detail::errHandler(error, "clCreateContextFromType");
-        }
-
-        if (devices.size() > 0) {
-            platform_id = (cl_context_properties)platforms[i]();
-            break;
-        }
-    }
-
-    cps[5] = platform_id;
-
-    if (platform_id == 0) {
-        cl::detail::errHandler(CL_DEVICE_NOT_FOUND, "clCreateContextFromType");
-        return cl::Context();
-    }
+    
     return cl::Context(type, cps);
 }
 

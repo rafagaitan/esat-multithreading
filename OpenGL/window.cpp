@@ -182,3 +182,8 @@ void Window::setGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int a
     if (w->keyCallback)
         w->keyCallback(key,scancode,action,mods);
 }
+
+void Window::getWindowSize(int& w, int& h) const
+{
+    glfwGetFramebufferSize(windowHandler, &w, &h);
+}
