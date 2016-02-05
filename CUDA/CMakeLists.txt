@@ -9,7 +9,8 @@ IF(APPLE)
 ENDIF()
 
 # packages                                                                                                                                                                                                 
-find_package(CUDA)
+
+
 
 #session 7
 SET(SOURCES
@@ -85,7 +86,7 @@ cuda_add_executable(session9_cuda
 	OPTIONS ${GENCODE_SM20}
 )
 
-FIND_LIBRARY(CUDA_LIB
+FIND_LIBRARY(CUDA_CUDA_LIBRARY
     cuda
     PATHS 
     ${CUDA_INSTALL_PREFIX}/lib 
@@ -94,7 +95,7 @@ FIND_LIBRARY(CUDA_LIB
     DOC "\"cuda\" library"
 )
 
-target_link_libraries(session9_cuda ${CUDA_LIB})
+target_link_libraries(session9_cuda ${CUDA_CUDA_LIBRARY})
 
 SET_TARGET_PROPERTIES(session9_cuda PROPERTIES FOLDER "Applications")
 

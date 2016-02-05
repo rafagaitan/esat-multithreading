@@ -1,6 +1,4 @@
 # packages                                                                                                                                                                                                 
-find_package(OpenCL)
-find_package(OpenGL)
 
 SET(FILES
     session8.cpp
