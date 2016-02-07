@@ -5,6 +5,8 @@ find_package(OpenGL)
 find_package(GLFW)
 find_package(GLEW)
 
+if(GLFW_FOUND)
+
 SET(SOURCES
     window.cpp
 )
@@ -44,4 +46,6 @@ FOREACH(BIN ${BIN_PATH})
 		DESTINATION ${BIN} COMPONENT ${COMP}
 	)
 ENDFOREACH()
+endif()
+
 endif()
