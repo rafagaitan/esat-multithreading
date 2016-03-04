@@ -20,7 +20,6 @@ SET(SOURCES
 SET(HEADERS
     Config.hpp
     CUDAUtils.hpp
-    Multithreading/mtUtils/Algorithms.hpp
 )
 
 SET(CUDA_SOURCES
@@ -41,19 +40,19 @@ source_group("CUDA Header Files" FILES ${CUDA_HEADERS})
 set(GENCODE_SM20 -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_20,code=compute_20)
 
 cuda_add_executable(session7_cuda 
-	${CUDA_SOURCES} 
-	${CUDA_HEADERS}
-	${SOURCES} 
-	${HEADERS}
-	OPTIONS  ${GENCODE_SM20}
+    ${CUDA_SOURCES} 
+    ${CUDA_HEADERS}
+    ${SOURCES} 
+    ${HEADERS}
+    OPTIONS  ${GENCODE_SM20}
 )
 
 SET_TARGET_PROPERTIES(session7_cuda PROPERTIES FOLDER "Applications")
 
 FOREACH(BIN ${BIN_PATH})
-	INSTALL(TARGETS session7_cuda
-		RUNTIME DESTINATION ${BIN} COMPONENT ${COMP}
-	)
+    INSTALL(TARGETS session7_cuda
+        RUNTIME DESTINATION ${BIN} COMPONENT ${COMP}
+    )
 ENDFOREACH()
 
 #session9
@@ -80,10 +79,10 @@ source_group("CUDA Source Files" FILES ${CUDA_SOURCES})
 source_group("CUDA Header Files" FILES ${CUDA_HEADERS})
 
 cuda_add_executable(session9_cuda 
-	${CUDA_SOURCES} 
-	${CUDA_HEADERS}
-	${SOURCES} 
-	OPTIONS ${GENCODE_SM20}
+    ${CUDA_SOURCES} 
+    ${CUDA_HEADERS}
+    ${SOURCES} 
+    OPTIONS ${GENCODE_SM20}
 )
 
 FIND_LIBRARY(CUDA_CUDA_LIBRARY
@@ -101,21 +100,21 @@ SET_TARGET_PROPERTIES(session9_cuda PROPERTIES FOLDER "Applications")
 
 if(WIN32)
     add_custom_command(TARGET session9_cuda 
-		PRE_BUILD 
-		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build-cubin.bat ${CMAKE_BINARY_DIR}/CUDA 
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	)
+        PRE_BUILD 
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build-cubin.bat ${CMAKE_BINARY_DIR}/CUDA 
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
 endif()
 
 FOREACH(BIN ${BIN_PATH})
-	INSTALL(TARGETS session9_cuda
-		RUNTIME DESTINATION ${BIN} COMPONENT ${COMP}
-	)
-	IF(WIN32)
-		INSTALL(FILES ${CMAKE_BINARY_DIR}/CUDA/MatrixMult.cubin
-			DESTINATION  ${BIN} COMPONENT ${COMP}
-		)
-	ENDIF()
+    INSTALL(TARGETS session9_cuda
+        RUNTIME DESTINATION ${BIN} COMPONENT ${COMP}
+    )
+    IF(WIN32)
+        INSTALL(FILES ${CMAKE_BINARY_DIR}/CUDA/MatrixMult.cubin
+            DESTINATION  ${BIN} COMPONENT ${COMP}
+        )
+    ENDIF()
 ENDFOREACH()
 
 # session 10
@@ -155,11 +154,11 @@ include_directories(
 add_definitions(-DRESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
    
 cuda_add_executable(session10_cuda 
-	${CUDA_SOURCES} 
-	${CUDA_HEADERS}
-	${SOURCES} 
-	${HEADERS}
-	OPTIONS ${GENCODE_SM13} ${GENCODE_SM20}
+    ${CUDA_SOURCES} 
+    ${CUDA_HEADERS}
+    ${SOURCES} 
+    ${HEADERS}
+    OPTIONS ${GENCODE_SM13} ${GENCODE_SM20}
 )
 set(LIBRARIES ${LIBRARIES} hdk ${GLEW_LIBRARIES})
 target_link_libraries(session10_cuda ${LIBRARIES} hdk ${GLEW_LIBRARIES})
@@ -167,7 +166,7 @@ target_link_libraries(session10_cuda ${LIBRARIES} hdk ${GLEW_LIBRARIES})
 SET_TARGET_PROPERTIES(session10_cuda PROPERTIES FOLDER "Applications")
 
 FOREACH(BIN ${BIN_PATH})
-	INSTALL(TARGETS session10_cuda
-		RUNTIME DESTINATION ${BIN} COMPONENT ${COMP}
-	)
+    INSTALL(TARGETS session10_cuda
+        RUNTIME DESTINATION ${BIN} COMPONENT ${COMP}
+    )
 ENDFOREACH()

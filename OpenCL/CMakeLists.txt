@@ -37,21 +37,20 @@ FOREACH(F ${FILES})
         mtUtils
     )
     if(APP_NAME MATCHES "session10")
-            find_package(GLEW)
-		
-            set(LIBRARIES ${LIBRARIES} hdk ${GLEW_LIBRARIES})
-	    set(SOURCES ${SOURCES} OpenGLUtils.cpp)
-		set(HEADERS ${HEADERS} OpenGLUtils.hpp)
-		include_directories(
-		   ${OPENGL_INCLUDE_DIR}
-	       ${CMAKE_SOURCE_DIR}/OpenGL 
-		   ${CMAKE_SOURCE_DIR}/deps/common/include
-		   ${GLFW_INCLUDE_DIR})
-		FOREACH(BIN ${BIN_PATH})
-			INSTALL(FILES Fragment.glsl Vertex.glsl
-				DESTINATION ${BIN} COMPONENT ${COMP}
-			)
-		ENDFOREACH()
+        find_package(GLEW)
+        set(LIBRARIES ${LIBRARIES} hdk ${GLEW_LIBRARIES})
+        set(SOURCES ${SOURCES} OpenGLUtils.cpp)
+        set(HEADERS ${HEADERS} OpenGLUtils.hpp)
+        include_directories(
+            ${OPENGL_INCLUDE_DIR}
+            ${CMAKE_SOURCE_DIR}/OpenGL 
+            ${CMAKE_SOURCE_DIR}/deps/common/include
+            ${GLFW_INCLUDE_DIR})
+        FOREACH(BIN ${BIN_PATH})
+            INSTALL(FILES Fragment.glsl Vertex.glsl
+                DESTINATION ${BIN} COMPONENT ${COMP}
+            )
+        ENDFOREACH()
     endif()
 
     source_group("OpenCL Source Files" FILES ${OPENCL_SOURCES})
@@ -65,8 +64,8 @@ FOREACH(F ${FILES})
 ENDFOREACH(F)
 
 FOREACH(BIN ${BIN_PATH})
-	INSTALL(FILES ${OPENCL_SOURCES}
-		DESTINATION ${BIN} COMPONENT ${COMP}
-	)
+    INSTALL(FILES ${OPENCL_SOURCES}
+        DESTINATION ${BIN} COMPONENT ${COMP}
+    )
 ENDFOREACH()
 
