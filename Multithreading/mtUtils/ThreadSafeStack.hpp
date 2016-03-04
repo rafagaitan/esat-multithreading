@@ -77,16 +77,16 @@ public:
         _data.push(new_value);
         _data_cond.notify_one();
     }
-    void pop(T& value)
+    bool pop(T& value)
     {
         std::lock_guard<std::mutex> lock(_mtx);
-        _pop(value);
+        return _pop(value);
     }
-    void wait_pop(T& value)
+    bool wait_pop(T& value)
     {
         std::unique_lock<std::mutex> lock(_mtx);
         _data_cond.wait_for(lock, std::chrono::milliseconds(30), [this]() { return !_data.empty(); });
-        _pop(value);
+        return _pop(value);
     }
     bool empty() const
     {
@@ -96,15 +96,16 @@ public:
 private:
     ThreadSafeStack& operator=(const ThreadSafeStack&); // deleted
 
-    void _pop(T& value)
+    bool _pop(T& value)
     {
-        if(_data.empty()) throw EmptyStackException();
+        if (_data.empty()) return false;
         value = _data.top();
         _data.pop();
+        return true;
     }
     std::shared_ptr<T> _pop()
     {
-        if(_data.empty()) throw EmptyStackException();
+        if (_data.empty()) nullptr;
         std::shared_ptr<T> const res(std::make_shared<T>(_data.top()));
         _data.pop();
         return res;

@@ -46,7 +46,7 @@
 #include <deque>
 #include <stack>
 #include <algorithm>
-#include <algorithm>
+#include <atomic>
 
 #include <mtUtils/ScopedThread.hpp>
 #include <mtUtils/ThreadSafeStack.hpp>
@@ -197,6 +197,7 @@ bool contains_in_list(int value_to_find)
 
 int main(int , char**)
 {
+
     std::cout << "Starting hard_work, ready?";
     std::cin.ignore(); 
     std::thread my_thread(hard_work);
@@ -302,7 +303,7 @@ int main(int , char**)
     {
         std::cout << "ready to fill and find in a list?" << std::endl;
         std::cin.ignore();
-        auto inserter_function = [](unsigned int numelements)
+        auto producer_function = [](unsigned int numelements)
         {
             for(unsigned int i=0;i<numelements;i++)
             {
@@ -310,8 +311,8 @@ int main(int , char**)
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         };
-        ScopedThread thread_inserter1(std::thread(inserter_function,100));
-        ScopedThread thread_inserter2(std::thread(inserter_function,100));
+        ScopedThread thread_producer1(std::thread(producer_function,100));
+        ScopedThread thread_producer2(std::thread(producer_function,100));
         auto finder_function = [](unsigned int value_to_find) 
         {
             auto attempts = 0u;
@@ -330,7 +331,6 @@ int main(int , char**)
         ScopedThread thread_finder1(std::thread(finder_function,88));
         ScopedThread thread_finder2(std::thread(finder_function,101));
     }
-
     {
 
         std::cout << "ready to crush a stack?" << std::endl;
@@ -343,37 +343,41 @@ int main(int , char**)
             s.pop();
             foo(value, "do_something");
         }
+        std::atomic<int> producersWorking(0);
+        std::atomic<bool> started(false);
         ThreadSafeStack<int> ts;
-        auto inserter_function = [](ThreadSafeStack<int>& ts, unsigned int numelements)
+        auto producer_function = [&started, &producersWorking](ThreadSafeStack<int>& ts, unsigned int numelements)
         {
+            producersWorking++;
+            started = true;
             for(unsigned int i=0;i<numelements;i++)
             {
                 ts.push(i);
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
+            producersWorking--;
         };
-        auto popper_function = [](ThreadSafeStack<int>& ts)
+        auto consumer_function = [&started, &producersWorking](ThreadSafeStack<int>& ts)
         {
-            while(!ts.empty())
+            while (!started) { std::this_thread::sleep_for(std::chrono::milliseconds(1)); }
+            while(producersWorking > 0)
             {
-                try
+                int value;
+                if (ts.pop(value))
                 {
-                    int value;
-                    ts.pop(value);
                     std::cout << std::this_thread::get_id() << ":popped value=" << value << std::endl;
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
-                catch(EmptyStackException& )
-                {
-                    break;
                 }
             }
             std::cout << std::this_thread::get_id() << ":stack is empty" << std::endl;
         };
-        ScopedThread thread_inserter1(std::thread(inserter_function,std::ref(ts),100));
-        ScopedThread thread_inserter2(std::thread(inserter_function,std::ref(ts),100));
-        ScopedThread thread_popper1(std::thread(popper_function,std::ref(ts)));
-        ScopedThread thread_popper2(std::thread(popper_function,std::ref(ts)));
+        ScopedThread thread_producer1(std::thread(producer_function,std::ref(ts),100));
+        ScopedThread thread_producer2(std::thread(producer_function,std::ref(ts),100));
+        ScopedThread thread_producer3(std::thread(producer_function, std::ref(ts), 100));
+        ScopedThread thread_producer4(std::thread(producer_function, std::ref(ts), 100));
+        ScopedThread thread_consumer1(std::thread(consumer_function,std::ref(ts)));
+        ScopedThread thread_consumer2(std::thread(consumer_function,std::ref(ts)));
+        ScopedThread thread_consumer3(std::thread(consumer_function, std::ref(ts)));
     }
 
     return EXIT_SUCCESS;

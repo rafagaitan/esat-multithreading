@@ -44,8 +44,11 @@ class ScopedThread
 {
     std::thread _t;
 public:
-    ScopedThread(): _t() { }
-    explicit ScopedThread(std::thread t):
+    explicit ScopedThread(): _t() 
+    {
+      
+    }
+    ScopedThread(std::thread t):
         _t(std::move(t))
     {
         if(!_t.joinable())

@@ -45,7 +45,7 @@ FOREACH(F ${FILES})
 		include_directories(
 		   ${OPENGL_INCLUDE_DIR}
 	       ${CMAKE_SOURCE_DIR}/OpenGL 
-		   ${CMAKE_SOURCE_DIR}/deps/i386-VC120/include
+		   ${CMAKE_SOURCE_DIR}/deps/common/include
 		   ${GLFW_INCLUDE_DIR})
 		FOREACH(BIN ${BIN_PATH})
 			INSTALL(FILES Fragment.glsl Vertex.glsl

@@ -148,8 +148,8 @@ source_group("CUDA Header Files" FILES ${CUDA_HEADERS})
 
 include_directories(
    ${OPENGL_INCLUDE_DIR}
-   ${CMAKE_SOURCE_DIR}/OpenGL 
-   ${CMAKE_SOURCE_DIR}/deps/i386-VC120/include
+   ${CMAKE_SOURCE_DIR}/OpenGL
+   ${CMAKE_SOURCE_DIR}/deps/common/include 
    ${GLFW_INCLUDE_DIR})
 
 add_definitions(-DRESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}")

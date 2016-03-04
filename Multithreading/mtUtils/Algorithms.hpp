@@ -15,18 +15,18 @@
 struct ScopedTimer
 {
     typedef std::chrono::duration<float> float_seconds;
-    ScopedTimer(const std::string& infoText, unsigned int numTests = 1) :
-        _infoText(infoText),
-        _start(std::chrono::system_clock::now()),
-        _numTests(numTests)
+    ScopedTimer(const std::string& infoText, unsigned int numTests = 1)
+        : _infoText(infoText)
+        , _start(std::chrono::high_resolution_clock::now())
+        , _numTests(numTests)
     { }
     ~ScopedTimer()
     {
-        auto elapsed = std::chrono::duration_cast<float_seconds>(std::chrono::system_clock::now() - _start);
+        auto elapsed = std::chrono::duration_cast<float_seconds>(std::chrono::high_resolution_clock::now() - _start);
         std::cout << "Elapsed time for " << _infoText << ": " << (float)elapsed.count() / (float)_numTests << std::endl;
     }
     std::string                                        _infoText;
-    std::chrono::time_point<std::chrono::system_clock> _start;
+    std::chrono::time_point<std::chrono::high_resolution_clock> _start;
     unsigned int _numTests;
 };
 #else
@@ -61,11 +61,11 @@ struct ScopedTimer
             return ((Timestamp_t)tv.tv_sec)*1000000+(Timestamp_t)tv.tv_usec;
         }
     #endif
-    ScopedTimer(const std::string& infoText, unsigned int numTests = 1) :
-        _infoText(infoText),
-        _start(tick()),
-        _numTests(numTests),
-	_secsPerTick(1.0/(double)1000000)
+    ScopedTimer(const std::string& infoText, unsigned int numTests = 1) 
+        : _infoText(infoText)
+        , _start(tick())
+        , _numTests(numTests)
+        , _secsPerTick(1.0/(double)1000000)
     { }
     ~ScopedTimer()
     {

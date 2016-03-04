@@ -23,19 +23,20 @@ INCLUDE(Macros)
 CONFIGURE_DEFAULTS()
 
 IF(WIN32)
-	SET(DEPS_DIR ${CMAKE_SOURCE_DIR}/deps/i386-VC120)
-    SET(CURL_DIR ${DEPS_DIR})
-	SET(GLFW_DIR ${DEPS_DIR})
-	SET(GLEW_DIR ${DEPS_DIR})
+    IF(CMAKE_CL_64)
+        SET(DEPS_DIR ${CMAKE_SOURCE_DIR}/deps/x64-VC120)
+    ELSE()
+        SET(DEPS_DIR ${CMAKE_SOURCE_DIR}/deps/i386-VC120)
+    ENDIF()
+    SET(GLFW_DIR ${DEPS_DIR})
+    SET(GLEW_DIR ${DEPS_DIR})
 ELSEIF(APPLE)
-	SET(DEPS_DIR ${CMAKE_SOURCE_DIR}/deps/macosx)
+    SET(DEPS_DIR ${CMAKE_SOURCE_DIR}/deps/macosx)
 ENDIF()
 
-SET(LIBLAS_DIR ${DEPS_DIR})
 
 link_directories(${LIBRARY_OUTPUT_PATH})
 
-#add_subdirectory(gtest-1.7.0)
 add_subdirectory(Multithreading)
 
 find_package(OpenGL)

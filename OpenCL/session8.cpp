@@ -111,7 +111,7 @@ namespace test_opencl
             {
                 a[i] = static_cast<float>(sin(i)*sin(i));
                 b[i] = static_cast<float>(cos(i)*cos(i));
-                c[i] = a[i] + c[i];
+                c[i] = a[i] + b[i];
             }
             
             if (printResults)
@@ -322,9 +322,9 @@ namespace test_opencl
        
         
         // Get the first GPU device associated with the platform
-        clGetDeviceIDs(platforms[1], CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
+        clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
         std::unique_ptr<cl_device_id[]> devices(new cl_device_id[numDevices]);
-        clGetDeviceIDs(platforms[1], CL_DEVICE_TYPE_GPU, numDevices, devices.get(), NULL);
+        clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_GPU, numDevices, devices.get(), NULL);
         //Create an OpenCL context for the GPU device
         cl_context context;
         context = clCreateContext(NULL, 1, &devices[0], NULL, NULL, NULL);

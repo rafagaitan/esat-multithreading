@@ -152,7 +152,7 @@ int main(int, char**)
         std::atomic<bool> done(false);
 
         ThreadSafeQueue<int> ts;
-        auto inserter_function = [](ThreadSafeQueue<int>& ts, unsigned int numelements)
+        auto producer_function = [](ThreadSafeQueue<int>& ts, unsigned int numelements)
         {
             for (unsigned int i = 0; i < numelements; i++)
             {
@@ -162,7 +162,7 @@ int main(int, char**)
             }
         };
 
-        auto popper_function = [&](ThreadSafeQueue<int>& ts)
+        auto consumer_function = [&](ThreadSafeQueue<int>& ts)
         {
             while (!done || !ts.empty())
             {
@@ -175,10 +175,10 @@ int main(int, char**)
         std::vector<ScopedThread> producers(200);
         std::vector<ScopedThread> consumers(4);
         for(auto i=0;i<4;i++)
-            consumers[i] = std::thread(popper_function,std::ref(ts));
+            consumers[i] = std::thread(consumer_function,std::ref(ts));
 
         for(auto i=0;i<200;i++)
-            producers[i] = std::thread(inserter_function,std::ref(ts),100);
+            producers[i] = std::thread(producer_function,std::ref(ts),100);
 
         producers.clear();
         done = true;
@@ -218,7 +218,7 @@ int main(int, char**)
 
         auto ts(std::make_shared<ThreadSafeQueue<int>>());
 
-        auto inserter_function = [](SharedThreadSafeQueue ts, unsigned int numelements)
+        auto producer_function = [](SharedThreadSafeQueue ts, unsigned int numelements)
         {
             for (unsigned int i = 0; i < numelements; i++)
             {
@@ -228,7 +228,7 @@ int main(int, char**)
             }
         };
 
-        auto popper_function = [&](SharedThreadSafeQueue ts)
+        auto consumer_function = [&](SharedThreadSafeQueue ts)
         {
             while (!done || !ts->empty())
             {
@@ -243,10 +243,10 @@ int main(int, char**)
         std::vector<std::future<void>> producers;
         std::vector<std::future<void>> consumers;
         for (auto i = 0; i < 20; i++)
-            consumers.emplace_back(pool.enqueue(popper_function, ts));
+            consumers.emplace_back(pool.enqueue(consumer_function, ts));
 
         for (auto i = 0; i < 200; i++)
-            producers.emplace_back(pool.enqueue(inserter_function, ts, 100));
+            producers.emplace_back(pool.enqueue(producer_function, ts, 100));
 
         for (auto i = 0u; i < producers.size(); i++)
             producers[i].wait();

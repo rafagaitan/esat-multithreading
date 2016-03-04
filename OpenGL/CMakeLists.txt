@@ -5,8 +5,6 @@ find_package(OpenGL)
 find_package(GLFW)
 find_package(GLEW)
 
-if(GLFW_FOUND)
-
 SET(SOURCES
     window.cpp
 )
@@ -21,6 +19,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${GLEW_INCLUDE_DIR}
     ${GLFW_INCLUDE_DIR}
+	${CMAKE_SOURCE_DIR}/deps/common/include
 )
 
 SET(LIBRARIES
@@ -46,6 +45,4 @@ FOREACH(BIN ${BIN_PATH})
 		DESTINATION ${BIN} COMPONENT ${COMP}
 	)
 ENDFOREACH()
-endif()
-
 endif()

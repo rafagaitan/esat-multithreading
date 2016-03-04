@@ -169,8 +169,8 @@ int main(int , char**)
             else
                 std::cout << std::this_thread::get_id() << ": not found! :(" << std::endl;
         };
-        ScopedThread thread_inserter1(std::thread(producer_function,100));
-        ScopedThread thread_inserter2(std::thread(producer_function,100));
+        ScopedThread thread_producer1(std::thread(producer_function,100));
+        ScopedThread thread_producer2(std::thread(producer_function,100));
         ScopedThread thread_finder1(std::thread(consumer_function, 88));
         ScopedThread thread_finder2(std::thread(consumer_function, 101));
     }
@@ -203,8 +203,8 @@ int main(int , char**)
                 ": not found! :(" << std::endl;
             }
         };
-        ScopedThread thread_inserter1(std::thread(producer_function,100));
-        ScopedThread thread_inserter2(std::thread(producer_function,100));
+        ScopedThread thread_producer1(std::thread(producer_function,100));
+        ScopedThread thread_producer2(std::thread(producer_function,100));
         ScopedThread thread_finder1(std::thread(consumer_function,88));
         ScopedThread thread_finder2(std::thread(consumer_function,103));
         //data_list.done();
@@ -317,7 +317,7 @@ int main(int , char**)
 
         std::atomic<bool> done(false);
         ThreadSafeStack<int> ts;
-        auto inserter_function = [&done](ThreadSafeStack<int>& ts, unsigned int numelements)
+        auto producer_function = [&done](ThreadSafeStack<int>& ts, unsigned int numelements)
         {
             for(unsigned int i=0;i<numelements;i++)
             {
@@ -326,7 +326,7 @@ int main(int , char**)
             }
             done = true;
         };
-        auto popper_function = [&done](ThreadSafeStack<int>& ts)
+        auto consumer_function = [&done](ThreadSafeStack<int>& ts)
         {
             while(!done || !ts.empty())
             {
@@ -346,11 +346,11 @@ int main(int , char**)
             }
             std::cout << std::this_thread::get_id() << ":stack is done" << std::endl;
         };
-        ScopedThread thread_popper1(std::thread(popper_function,std::ref(ts)));
-        ScopedThread thread_popper2(std::thread(popper_function,std::ref(ts)));
-        ScopedThread thread_popper3(std::thread(popper_function,std::ref(ts)));
-        ScopedThread thread_inserter1(std::thread(inserter_function,std::ref(ts),100));
-        ScopedThread thread_inserter2(std::thread(inserter_function,std::ref(ts),100));
+        ScopedThread thread_consumer1(std::thread(consumer_function,std::ref(ts)));
+        ScopedThread thread_consumer2(std::thread(consumer_function,std::ref(ts)));
+        ScopedThread thread_consumer3(std::thread(consumer_function,std::ref(ts)));
+        ScopedThread thread_producer1(std::thread(producer_function,std::ref(ts),100));
+        ScopedThread thread_producer2(std::thread(producer_function,std::ref(ts),100));
     }
 
     {
@@ -360,7 +360,7 @@ int main(int , char**)
         std::atomic<bool> done(false);
 
         ThreadSafeStack<int> ts;
-        auto inserter_function = [&done](ThreadSafeStack<int>& ts, unsigned int numelements)
+        auto producer_function = [&done](ThreadSafeStack<int>& ts, unsigned int numelements)
         {
             for(unsigned int i=0;i<numelements;i++)
             {
@@ -369,7 +369,7 @@ int main(int , char**)
             }
             done = true;
         };
-        auto popper_function = [&](ThreadSafeStack<int>& ts)
+        auto consumer_function = [&](ThreadSafeStack<int>& ts)
         {
             while(!done || !ts.empty())
             {
@@ -386,11 +386,11 @@ int main(int , char**)
             }
             std::cout << std::this_thread::get_id() << ":stack is done" << std::endl;
         };
-        ScopedThread thread_popper1(std::thread(popper_function,std::ref(ts)));
-        ScopedThread thread_popper2(std::thread(popper_function,std::ref(ts)));
-        ScopedThread thread_popper3(std::thread(popper_function,std::ref(ts)));
-        ScopedThread thread_inserter1(std::thread(inserter_function,std::ref(ts),100));
-        ScopedThread thread_inserter2(std::thread(inserter_function,std::ref(ts),100));
+        ScopedThread thread_consumer1(std::thread(consumer_function,std::ref(ts)));
+        ScopedThread thread_consumer2(std::thread(consumer_function,std::ref(ts)));
+        ScopedThread thread_consumer3(std::thread(consumer_function,std::ref(ts)));
+        ScopedThread thread_producer1(std::thread(producer_function,std::ref(ts),100));
+        ScopedThread thread_producer2(std::thread(producer_function,std::ref(ts),100));
 
     }
 
@@ -401,7 +401,7 @@ int main(int , char**)
         std::atomic<bool> done(false);
 
         ThreadSafeQueue<int> ts;
-        auto inserter_function = [](ThreadSafeQueue<int>& ts, unsigned int numelements)
+        auto producer_function = [](ThreadSafeQueue<int>& ts, unsigned int numelements)
         {
             for(unsigned int i=0;i<numelements;i++)
             {
@@ -411,7 +411,7 @@ int main(int , char**)
             }
         };
 
-        auto popper_function = [&](ThreadSafeQueue<int>& ts)
+        auto consumer_function = [&](ThreadSafeQueue<int>& ts)
         {
             while(!done || !ts.empty())
             {
@@ -421,19 +421,19 @@ int main(int , char**)
             }
             std::cout << std::this_thread::get_id() << ":stack is done" << std::endl;
         };
-        auto thread_popper1 = std::async(popper_function,std::ref(ts));
-        auto thread_popper2 = std::async(popper_function,std::ref(ts));
-        auto thread_popper3 = std::async(popper_function,std::ref(ts));
-        auto thread_inserter1 = std::async(inserter_function,std::ref(ts),100);
-        auto thread_inserter2 = std::async(inserter_function,std::ref(ts),100);
+        auto thread_consumer1 = std::async(consumer_function,std::ref(ts));
+        auto thread_consumer2 = std::async(consumer_function,std::ref(ts));
+        auto thread_consumer3 = std::async(consumer_function,std::ref(ts));
+        auto thread_producer1 = std::async(producer_function,std::ref(ts),100);
+        auto thread_producer2 = std::async(producer_function,std::ref(ts),100);
 
-        thread_inserter1.wait();
-        thread_inserter2.wait();
+        thread_producer1.wait();
+        thread_producer2.wait();
         done = true;
         ts.notify_and_terminate();
-        thread_popper1.wait();
-        thread_popper2.wait();
-        thread_popper3.wait();
+        thread_consumer1.wait();
+        thread_consumer2.wait();
+        thread_consumer3.wait();
 
     }
 

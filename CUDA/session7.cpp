@@ -14,8 +14,10 @@
 
 namespace test_runtime_api
 {
+
+    const size_t numElementsToPrint = 4;
     template<typename T>
-    void printV(std::ostream& out, const T& a, const unsigned int size, unsigned int initElement, unsigned int numElements)
+    void printV(std::ostream& out, const T& a, size_t size, size_t initElement, size_t numElements)
     {
         unsigned int end = std::min(size, initElement + numElements);
         if (initElement == 0)
@@ -68,16 +70,16 @@ namespace test_runtime_api
         {
             a[i] = static_cast<float>(sin(i)*sin(i));
             b[i] = static_cast<float>(cos(i)*cos(i));
-            c[i] = a[i] + c[i];
+            c[i] = a[i] + b[i];
         }
 
         if (printResults)
         {
-            printV(std::cout, a, a.size(),  0, 20); printV(std::cout, a, a.size(), arraySize - 20, 20);
+            printV(std::cout, a, a.size(), 0, numElementsToPrint); printV(std::cout, a, a.size(), arraySize - numElementsToPrint, 20);
             std::cout << "    +    ";
-            printV(std::cout, b, b.size(), 0, 20); printV(std::cout, b, b.size(), arraySize - 20, 20);
+            printV(std::cout, b, b.size(), 0, numElementsToPrint); printV(std::cout, b, b.size(), arraySize - numElementsToPrint, 20);
             std::cout << "   =   ";
-            printV(std::cout, c, c.size(), 0, 20); printV(std::cout, c, c.size(), arraySize - 20, 20);
+            printV(std::cout, c, c.size(), 0, numElementsToPrint); printV(std::cout, c, c.size(), arraySize - numElementsToPrint, numElementsToPrint);
             std::cout << std::endl;
         }
 
@@ -105,11 +107,11 @@ namespace test_runtime_api
 
         if (printResults)
         {
-            printV(std::cout, a, a.size(), 0, 20); printV(std::cout, a, a.size(), arraySize - 20, 20);
+            printV(std::cout, a, a.size(), 0, numElementsToPrint); printV(std::cout, a, a.size(), arraySize - numElementsToPrint, numElementsToPrint);
             std::cout << "    +    ";
-            printV(std::cout, b, b.size(), 0, 20); printV(std::cout, b, b.size(), arraySize - 20, 20);
+            printV(std::cout, b, b.size(), 0, numElementsToPrint); printV(std::cout, b, b.size(), arraySize - numElementsToPrint, numElementsToPrint);
             std::cout << "   =   ";
-            printV(std::cout, c, c.size(),  0, 20); printV(std::cout, c, c.size(), arraySize - 20, 20);
+            printV(std::cout, c, c.size(), 0, numElementsToPrint); printV(std::cout, c, c.size(), arraySize - numElementsToPrint, numElementsToPrint);
             std::cout << std::endl;
         }
     }
@@ -133,11 +135,11 @@ namespace test_runtime_api
 
         if (printResults)
         {
-            printV(std::cout, a, a.size(), 0, 20); printV(std::cout, a, a.size(), arraySize - 20, 20);
+            printV(std::cout, a, a.size(), 0, numElementsToPrint); printV(std::cout, a, a.size(), arraySize - numElementsToPrint, numElementsToPrint);
             std::cout << "    +    ";
-            printV(std::cout, b, b.size(), 0, 20); printV(std::cout, b, b.size(), arraySize - 20, 20);
+            printV(std::cout, b, b.size(), 0, numElementsToPrint); printV(std::cout, b, b.size(), arraySize - numElementsToPrint, numElementsToPrint);
             std::cout << "   =   ";
-            printV(std::cout, c, c.size(), 0, 20); printV(std::cout, c, c.size(), arraySize - 20, 20);
+            printV(std::cout, c, c.size(), 0, numElementsToPrint); printV(std::cout, c, c.size(), arraySize - numElementsToPrint, numElementsToPrint);
             std::cout << std::endl;
         }
     }
@@ -157,19 +159,25 @@ namespace test_runtime_api
         float* c_ptr = c.data();
 
         cudaStatus = fillAndAddWithCudaV2(c_ptr, a_ptr, b_ptr, arraySize);
-        cuda::Check::CUDAError(cudaStatus, "fillAndAddWithCuda failed!");
+        cuda::Check::CUDAError(cudaStatus, "fillAndAddWithCudaV2 failed!");
 
 
         if (printResults)
         {
-            printV(std::cout, a, a.size(), 0, 20); printV(std::cout, a, a.size(), arraySize - 20, 20);
+            printV(std::cout, a, a.size(), 0, numElementsToPrint); printV(std::cout, a, a.size(), arraySize - numElementsToPrint, numElementsToPrint);
             std::cout << "    +    ";
-            printV(std::cout, b, b.size(), 0, 20); printV(std::cout, b, b.size(), arraySize - 20, 20);
+            printV(std::cout, b, b.size(), 0, numElementsToPrint); printV(std::cout, b, b.size(), arraySize - numElementsToPrint, numElementsToPrint);
             std::cout << "   =   ";
-            printV(std::cout, c, c.size(), 0, 20); printV(std::cout, c, c.size(), arraySize - 20, 20);
+            printV(std::cout, c, c.size(), 0, numElementsToPrint); printV(std::cout, c, c.size(), arraySize - numElementsToPrint, numElementsToPrint);
             std::cout << std::endl;
         }
     }
+}
+
+void pause()
+{
+    std::cout << "Press any key to continue." << std::endl;
+    std::cin.ignore();
 }
 
 
@@ -177,14 +185,14 @@ int main()
 {
     try
     {
-        std::cout << "Test CUDA simple 1" << std::endl;
-        //std::cin.ignore();
-        test_runtime_api::test_cuda_simple1();
-
         const unsigned int numTests = 10;
         const unsigned int iniMult = 1;
         const unsigned int maxMult = 10000;
         const bool printResults = false;
+        std::cout << "Test CUDA simple 1" << std::endl;
+        //std::cin.ignore();
+        test_runtime_api::test_cuda_simple1();
+
         std::cout << "Test CPU simple 2, running ..." << std::endl;
         for (unsigned int mult = iniMult; mult <= maxMult; mult *= 10)
         {
@@ -196,6 +204,8 @@ int main()
                 test_runtime_api::test_cpu_simple2(arraySize, printResults);
             }
         }
+
+        pause();
 
         std::cout << "Test CUDA simple 2, running ..." << std::endl;
         for (unsigned int mult = iniMult; mult <= maxMult; mult *= 10)
@@ -209,6 +219,8 @@ int main()
             }
         }
 
+        pause();
+
         std::cout << "Test CUDA simple 3, running ..." << std::endl;
         for (unsigned int mult = iniMult; mult <= maxMult; mult *= 10)
         {
@@ -221,6 +233,8 @@ int main()
             }
         }
 
+        pause();
+
         std::cout << "Test CUDA simple 4, running ..." << std::endl;
         for (unsigned int mult = iniMult; mult <= maxMult; mult *= 10)
         {
@@ -232,10 +246,13 @@ int main()
                 test_runtime_api::test_cuda_simple4(arraySize, printResults);
             }
         }
+
+        pause();
     }
     catch (const cuda::cuda_exception& e)
     {
         std::cerr << "EXCEPTION:" << e.what() << std::endl;
+        pause();
         return -1;
     }
     return 0;

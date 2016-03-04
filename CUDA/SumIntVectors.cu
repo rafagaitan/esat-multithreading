@@ -40,7 +40,7 @@ __global__ void fillAndAddKernelV2(float* c, float *a, float* b)
     c[i] = a[i] + b[i];
 }
 
-const unsigned int BLOCK_SIZE = 1024;
+const unsigned int BLOCK_SIZE = 512;
 
 cudaError_t fillWithCuda(float *a, unsigned int size)
 {
@@ -192,7 +192,7 @@ cudaError_t fillAndAddWithCudaV2(float *c, float *a, float *b, unsigned int size
     fillAndAddKernelV2 << < totalBlocks, BLOCK_SIZE >> >(buffer_c, buffer_a, buffer_b);
     // Check for any errors launching the kernel
     cudaError_t cudaStatus = cudaGetLastError();
-    cuda::Check::CUDAError(cudaStatus, "addKernelV2 launch failed", cudaGetErrorString(cudaStatus));
+    cuda::Check::CUDAError(cudaStatus, "fillAndAddWithCudaV2 launch failed", cudaGetErrorString(cudaStatus));
     // cudaDeviceSynchronize waits for the kernel to finish, and returns
     // any errors encountered during the launch.
     cuda::Check::CUDAError(cudaDeviceSynchronize(), "cudaDeviceSynchronize returned error code ", cudaGetErrorString(cudaStatus), " after launching addKernelV2!");

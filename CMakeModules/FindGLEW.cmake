@@ -23,7 +23,14 @@ find_path(GLEW_INCLUDE_DIR GL/glew.h
   $ENV{GLEW_DIR}
   PATH_SUFFIXES include
 )
-find_library(GLEW_LIBRARY NAMES GLEW glew32 glew glew32s 
+
+if(CMAKE_CL_64)
+    SET(GLEW_SEARCH_NAMES GLEW glew64 glew glew64s)
+else()
+    SET(GLEW_SEARCH_NAMES GLEW glew32 glew glew32s)
+ENDIF()
+
+find_library(GLEW_LIBRARY NAMES ${GLEW_SEARCH_NAMES}
   PATHS
   ${GLEW_DIR}
   $ENV{GLEW_DIR}
