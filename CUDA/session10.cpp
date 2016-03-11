@@ -94,7 +94,7 @@ public:
         ,_ambientColorCULocation(-1)
 
         ,_destVBO_CUDA(0)
-        
+
         ,_zoom(5.0f)
         ,_rotateX(45.0f)
         ,_rotateY(45.0f)
@@ -110,7 +110,7 @@ public:
         view.getWindowSize(w, h);
         initGL(w,h);
         initCUDA();
-        
+
         _startTime = std::chrono::system_clock::now();
     }
 
@@ -143,7 +143,7 @@ public:
         glTranslatef(0,0,-_zoom);
         glTranslatef(_translateX,_translateY,0);
         glRotatef(_rotateX,1,0,0);
-        glRotatef(_rotateY,0,1,0);	
+        glRotatef(_rotateY,0,1,0);
 
         glUseProgram(_renderProgram);
 
@@ -159,7 +159,7 @@ public:
 
         glDrawArrays(GL_POINTS,0,_nDestVertices);
 
-        glUseProgram(NULL);
+        glUseProgram(0);
     }
 
 protected:
@@ -196,7 +196,7 @@ protected:
         {
             program = glCreateProgram();
 
-            glAttachShader(program, vertexShader); 
+            glAttachShader(program, vertexShader);
             glAttachShader(program, fragmentShader);
 
             glLinkProgram(program);
@@ -223,7 +223,7 @@ protected:
     void createVBO(GLuint* vbo, unsigned int numVertices)
     {
         _nDestVertices = numVertices;
-      
+
         glGenBuffers(1, vbo);
         glBindBuffer(GL_ARRAY_BUFFER, *vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float4)*_nDestVertices, NULL, GL_DYNAMIC_DRAW);
@@ -235,8 +235,8 @@ protected:
         try
         {
             size_t num_bytes;
-            float4* vertexPositions; 
-            cudaGraphicsMapResources(1, &_destVBO_CUDA, 0);  
+            float4* vertexPositions;
+            cudaGraphicsMapResources(1, &_destVBO_CUDA, 0);
             cudaGraphicsResourceGetMappedPointer((void**)&vertexPositions, &num_bytes, _destVBO_CUDA);
 
             ::computeVertices(vertexPositions, meshWidth, meshHeight, simulationTime);
@@ -250,7 +250,7 @@ protected:
     }
 
 
-        
+
 };
 
 bool done = false;
@@ -259,7 +259,7 @@ int main()
 {
     Window view;
     view.setWindowKeyCallback(
-        [](int32 key, int32 /*scancode*/, int32 action, int32) 
+        [](int32 key, int32 /*scancode*/, int32 action, int32)
     {
         if (action == 1) // released
         {
@@ -276,7 +276,7 @@ int main()
 
     SceneManager scene;
     scene.OnInit(view);
-    
+
     while (!view.ShouldClose() && ! done)
     {
 

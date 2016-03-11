@@ -38,7 +38,7 @@
 #ifndef _GL_SHADER_HELPER_H_
 #define _GL_SHADER_HELPER_H_
 
-#include <gl/glew.h>
+#include <GL/glew.h>
 
 namespace opengl
 {

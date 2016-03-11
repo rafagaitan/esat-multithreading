@@ -35,7 +35,8 @@
        |  http://www.esat.es/estudios/programacion-multihilo/?pnt=621  |
        -----------------------------------------------------------------
 **********************************************************************************/
-#pragma once
+#ifndef _OPENCL_UTILS_HPP_
+#define _OPENCL_UTILS_HPP_
 
 #include <exception>
 #include <iostream>
@@ -66,7 +67,7 @@ std::string loadKernel (const char* name)
         std::istreambuf_iterator<char> ());
     return result;
 }
-    
+
 cl_context_properties getPlaformIdForType(cl_device_type type)
 {
     std::vector<cl::Platform> platforms;
@@ -75,27 +76,27 @@ cl_context_properties getPlaformIdForType(cl_device_type type)
     // Check the platforms we found for a device of our specified type
     cl_context_properties platform_id = 0;
     for (unsigned int i = 0; i < platforms.size(); i++) {
-        
+
         std::vector<cl::Device> devices;
-        
+
 #if defined(__CL_ENABLE_EXCEPTIONS)
         try {
 #endif
-            
+
             error = platforms[i].getDevices(type, &devices);
-            
+
 #if defined(__CL_ENABLE_EXCEPTIONS)
         }
         catch (cl::Error) {}
         // Catch if exceptions are enabled as we don't want to exit if first platform has no devices of type
         // We do error checking next anyway, and can throw there if needed
 #endif
-        
+
         // Only squash CL_SUCCESS and CL_DEVICE_NOT_FOUND
         if (error != CL_SUCCESS && error != CL_DEVICE_NOT_FOUND) {
             cl::detail::errHandler(error, "clCreateContextFromType");
         }
-        
+
         if (devices.size() > 0) {
             platform_id = (cl_context_properties)platforms[i]();
             break;
@@ -112,7 +113,7 @@ cl::Context createCLGLContext(cl_device_type type) {
     cl::Platform platform;
     cl::Platform::get(&platform);
 
- 
+
 #if defined(__APPLE__) || defined(__MACOSX)
     // Apple (untested)
     cl_context_properties cps[] = {
@@ -122,7 +123,7 @@ cl::Context createCLGLContext(cl_device_type type) {
         (cl_context_properties)(platform)(),
         0
     };
-    
+
     cps[3] = getPlaformIdForType(type);
 
 #else
@@ -151,8 +152,10 @@ cl::Context createCLGLContext(cl_device_type type) {
 #endif
     cps[5] = getPlaformIdForType(type);
 #endif
-    
+
     return cl::Context(type, cps);
 }
 
 }
+
+#endif

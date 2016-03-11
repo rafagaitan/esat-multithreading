@@ -15,7 +15,7 @@ MACRO(CONFIGURE_DEFAULTS)
         endif()
     elseif(APPLE)
     endif()
-    
+
     include(DetermineCompiler)
 
     IF(UNIX AND NOT WIN32 AND NOT APPLE)
@@ -58,7 +58,7 @@ MACRO(CONFIGURE_DEFAULTS)
                 IF(CMAKE_COMPILER_IS_CLANGXX)
                     SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -std=c++11")
                 ELSE()
-                    SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -std=c++0x")
+                    SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -std=c++0x -pthread")
                 ENDIF()
             ENDIF()
         ENDIF()
@@ -672,7 +672,7 @@ MACRO(INSTALL_APP_SDK TARGET_NAME APP_NAME COMP_LIST)
             SET(BINARY_NAME_DEBUG "${APP_NAME}d.exe")
         ENDIF(WIN32)
     ENDIF(APPLE)
-	
+
     IF(APPLE)
         SET(LIB_PATH "${APP_NAME}.app/Contents/MacOS")
     ENDIF(APPLE)
@@ -747,16 +747,16 @@ MACRO(SETUP_APPLICATION LAUNCHER_NAME COMP)
 
     IF(APPLE)
         INSTALL(TARGETS ${LAUNCHER_NAME}
-	    BUNDLE DESTINATION . COMPONENT ${COMP}
+        BUNDLE DESTINATION . COMPONENT ${COMP}
         )
     ELSE()
         FOREACH(BIN ${BIN_PATH})
-	     INSTALL(TARGETS ${LAUNCHER_NAME}
-	             RUNTIME DESTINATION ${BIN} COMPONENT ${COMP}
+         INSTALL(TARGETS ${LAUNCHER_NAME}
+                 RUNTIME DESTINATION ${BIN} COMPONENT ${COMP}
              )
         ENDFOREACH()
     ENDIF()
-    
+
     SET(IS_APPLICATION 1)
 
     SETUP_RESOURCES(${LAUNCHER_NAME} ${COMP})

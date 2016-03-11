@@ -11,7 +11,7 @@ SET(MINOR_VERSION 0)
 SET(PATCH_VERSION 0)
 SET(VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
 
-# This values are used in macros to generate correct names and 
+# This values are used in macros to generate correct names and
 # correct paths to install stuff
 SET(SHORT_NAME "esat")
 SET(PLUGIN_PREFIX "${SHORT_NAME}_")
@@ -45,14 +45,14 @@ add_subdirectory(OpenGL)
 
 
 find_package(CUDA)
-if(WIN32) # temporal until I figure out how to fix building
+#if(WIN32) # temporal until I figure out how to fix building
   if(CUDA_FOUND)
       add_subdirectory(CUDA)
   endif()
-endif()
+#endif()
 
 find_package(OpenCL)
-if(OpenCL_FOUND)
+if(OPENCL_FOUND)
     add_subdirectory(OpenCL)
 endif()
 

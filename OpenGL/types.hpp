@@ -1,5 +1,5 @@
 /*
-Author: Ismael Castellanos Ruiz 
+Author: Ismael Castellanos Ruiz
 Data: 11/01/2014
 Contact: iscaru1988@gmail.com
 */
@@ -27,7 +27,7 @@ typedef void (CBFunctionMouseWheel)(int32);
 enum ShaderTypes{
   HDK_VERTEX_SHADER,
   HDK_FRAGMENT_SHADER,
-  HDK_GEOMETRY_SHADER,
+  HDK_GEOMETRY_SHADER
 };
 
 enum DataTypes{
@@ -38,7 +38,7 @@ enum DataTypes{
   HDK_FLOAT_VEC_4,
   HDK_FLOAT_MAT_2,
   HDK_FLOAT_MAT_3,
-  HDK_FLOAT_MAT_4,
+  HDK_FLOAT_MAT_4
 };
 
 enum BufferTargets{

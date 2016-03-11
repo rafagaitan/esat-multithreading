@@ -24,7 +24,7 @@ public:
     //! An enum for the screen types.
     enum ScreenTypeGLFW {
         FULLSCREEN = 1 << 0, /*!< Enum value to set the fullscreen mode. */
-        VSYNC = 1 << 1, /*!< Enum value to set the windowed mode. */
+        VSYNC = 1 << 1 /*!< Enum value to set the windowed mode. */
     };
 
     ~Window();
@@ -66,7 +66,7 @@ public:
     //!Sets a callback function for key events.
     /*It will call the parametrized funcion every time a key is pressed, the function must be "void funcName(int, int, int)".*/
     void setWindowKeyCallback(CBFunctionKey* cbFunction);
-    
+
     // gets the window size
     void getWindowSize(int& w, int& h) const;
 
@@ -75,7 +75,7 @@ private:
 
     //friend class Engine;
     GLFWwindow*       windowHandler;
-    CBFunctionKey*    keyCallback; 
+    CBFunctionKey*    keyCallback;
 
     static void setGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 

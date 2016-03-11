@@ -159,6 +159,11 @@ struct HostMatrix
         return elements_.data();
     }
 
+    operator const void* ()
+    {
+        return reinterpret_cast<const void*>(elements_.data());
+    }
+
     operator T* ()
     {
         return elements_.data();

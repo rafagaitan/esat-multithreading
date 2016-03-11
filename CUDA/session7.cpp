@@ -33,7 +33,7 @@ namespace test_runtime_api
             std::cout << " } ";
         else
             std::cout << " ... ";
-    };
+    }
 
 
     void test_cuda_simple1()

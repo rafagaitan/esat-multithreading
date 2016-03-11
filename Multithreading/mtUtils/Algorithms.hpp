@@ -6,6 +6,7 @@
 #include <atomic>
 #include <future>
 #include <vector>
+#include <algorithm>
 
 #include "ThreadPool.hpp"
 
@@ -61,7 +62,7 @@ struct ScopedTimer
             return ((Timestamp_t)tv.tv_sec)*1000000+(Timestamp_t)tv.tv_usec;
         }
     #endif
-    ScopedTimer(const std::string& infoText, unsigned int numTests = 1) 
+    ScopedTimer(const std::string& infoText, unsigned int numTests = 1)
         : _infoText(infoText)
         , _start(tick())
         , _numTests(numTests)
