@@ -51,9 +51,11 @@ find_package(CUDA)
   endif()
 #endif()
 
+if(APPLE AND WIN32)
 find_package(OpenCL)
 if(OPENCL_FOUND)
     add_subdirectory(OpenCL)
+endif()
 endif()
 
 INCLUDE(InstallRequiredSystemLibraries)
