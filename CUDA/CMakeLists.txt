@@ -1,12 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-IF(MSVC)
-    SET(EXTRA_CXX_FLAGS "/Wall /W3 /EHsc")
-    IF(BUILD_TREAT_WARNINGS_AS_ERRORS)
-         SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} /WX")
-    ENDIF()
-    ADD_DEFINITIONS("-DWIN32")
-ELSE()
+IF(UNIX)
     SET(EXTRA_CXX_FLAGS " -W -Wall -Wextra -Wparentheses -Wno-long-long -Wno-import -pedantic -Wreturn-type -Wmissing-braces -Wunknown-pragmas -Wunused")
     IF(BUILD_TREAT_WARNINGS_AS_ERRORS)
          SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -Werror")
@@ -14,24 +8,24 @@ ELSE()
     IF(BUILD_ENABLE_EFFECTIVE_CPP_WARNINGS)
          SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -Weffc++")
     ENDIF()
-    IF(UNIX)
-        IF(APPLE)
-           IF(CMAKE_COMPILER_IS_CLANGXX OR (CMAKE_GENERATOR STREQUAL Xcode) )
-                set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x")
-                set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-                SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS}  -std=c++0x -stdlib=libc++ -U__STRICT_ANSI__")
-                SET(EXTRA_LINKER_FLAGS "${EXTRA_LINKER_FLAGS} -stdlib=libc++")
-            ENDIF()
-        ELSEIF(ANDROID)
-            SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -std=gnu++0x -D__STDC_INT64__")
+    IF(APPLE)
+        IF(CMAKE_COMPILER_IS_CLANGXX OR (CMAKE_GENERATOR STREQUAL Xcode) )
+            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x")
+            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+            SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS}  -std=c++0x -stdlib=libc++ -U__STRICT_ANSI__")
+            SET(EXTRA_LINKER_FLAGS "${EXTRA_LINKER_FLAGS} -stdlib=libc++")
+        ENDIF()
+    ELSEIF(ANDROID)
+        SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -std=gnu++0x -D__STDC_INT64__")
+    ELSE()
+        IF(CMAKE_COMPILER_IS_CLANGXX)
+            SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -std=c++11")
         ELSE()
-            IF(CMAKE_COMPILER_IS_CLANGXX)
-                SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -std=c++11")
-            ELSE()
-                SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -std=c++0x")
-            ENDIF()
+            SET(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} -std=c++0x")
         ENDIF()
     ENDIF()
+
+	SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 ENDIF()
 
 IF(NOT CUDA_CONFIG_HAS_BEEN_RUN_BEFORE)
@@ -41,8 +35,6 @@ IF(NOT CUDA_CONFIG_HAS_BEEN_RUN_BEFORE)
     SET(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${EXTRA_LINKER_FLAGS}" CACHE STRING "Flags used by the linker." FORCE)
 ENDIF()
 
-
-SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 
 #session 7
 SET(SOURCES
@@ -131,11 +123,19 @@ target_link_libraries(session9_cuda ${CUDA_CUDA_LIBRARY})
 SET_TARGET_PROPERTIES(session9_cuda PROPERTIES FOLDER "Applications")
 
 if(WIN32)
-    add_custom_command(TARGET session9_cuda
-        PRE_BUILD
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build-cubin.bat ${CMAKE_BINARY_DIR}/CUDA
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
+    if(CMAKE_CL_64)
+        add_custom_command(TARGET session9_cuda 
+            PRE_BUILD 
+            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build-cubin-amd64.bat ${CMAKE_BINARY_DIR}/CUDA 
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+    else()
+        add_custom_command(TARGET session9_cuda 
+            PRE_BUILD 
+            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build-cubin-x86.bat ${CMAKE_BINARY_DIR}/CUDA 
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+    endif()
 endif()
 
 FOREACH(BIN ${BIN_PATH})
@@ -190,7 +190,7 @@ cuda_add_executable(session10_cuda
     ${CUDA_HEADERS}
     ${SOURCES}
     ${HEADERS}
-    OPTIONS ${GENCODE_SM13} ${GENCODE_SM20}
+    OPTIONS ${GENCODE_SM20}
 )
 set(LIBRARIES ${LIBRARIES} hdk ${GLEW_LIBRARIES})
 target_link_libraries(session10_cuda ${LIBRARIES} hdk ${GLEW_LIBRARIES})

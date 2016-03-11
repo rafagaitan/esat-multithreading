@@ -1,13 +1,13 @@
-prefix=C:/Users/empresas/Downloads/Multihilo/esat-multithreading-master/deps/x64-VC120
+prefix=D:/Projects/ESAT/esat-multithreading/deps/x64-VC120
 exec_prefix=${prefix}
 includedir=${prefix}/include
 libdir=${exec_prefix}/lib
 
 Name: GLFW
 Description: A multi-platform library for OpenGL, window and input
-Version: 3.2.0
+Version: 3.1.2
 URL: http://www.glfw.org/
 Requires.private: 
 Libs: -L${libdir} -lglfw3
-Libs.private:  -lgdi32
+Libs.private:  -lgdi32 -lopengl32
 Cflags: -I${includedir}

@@ -41,8 +41,14 @@ SETUP_CORELIB(${LIB_NAME} mt)
 if(WIN32)
 # dependencies
 FOREACH(BIN ${BIN_PATH})
-	INSTALL(FILES ${CMAKE_SOURCE_DIR}/deps/i386-VC120/bin/glew32.dll ${CMAKE_SOURCE_DIR}/deps/i386-VC120/bin/glfw3.dll
+    if(CMAKE_CL_64)
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/deps/x64-VC120/bin/glew64.dll ${CMAKE_SOURCE_DIR}/deps/x64-VC120/lib/glfw3.dll
 		DESTINATION ${BIN} COMPONENT ${COMP}
 	)
+	else()
+	INSTALL(FILES ${CMAKE_SOURCE_DIR}/deps/i386-VC120/bin/glew32.dll ${CMAKE_SOURCE_DIR}/deps/i386-VC120/lib/glfw3.dll
+		DESTINATION ${BIN} COMPONENT ${COMP}
+	)
+	endif()
 ENDFOREACH()
 endif()
