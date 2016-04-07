@@ -28,11 +28,11 @@ FOREACH(F ${FILES})
     include_directories(
        ${CMAKE_SOURCE_DIR}/Multithreading
        ${CMAKE_CURRENT_SOURCE_DIR}
-       ${OPENCL_INCLUDE_DIR}
+       ${OpenCL_INCLUDE_DIRS}
     )
 
     SET(LIBRARIES 
-        ${OPENCL_LIBRARIES}
+        ${OpenCL_LIBRARIES}
         ${OPENGL_LIBRARIES}
         mtUtils
     )
