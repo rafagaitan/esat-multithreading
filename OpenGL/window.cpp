@@ -50,6 +50,8 @@
 #include "types.hpp"
 
 
+using namespace hdk;
+
 struct GLFWInitializer
 {
     GLFWInitializer()

@@ -43,10 +43,14 @@
 #include <iterator>
 #include <fstream>
 
-#include "Config.hpp"
 
-//#include <CL/cl.h>
+
+#if defined(__linux__)
+#include <GL/glx.h>
+#include <CL/cl.hpp>
+#else
 #include "cl.hpp"
+#endif // !__APPLE__
 
 namespace opencl
 {

@@ -51,12 +51,12 @@ if(WIN32 OR (UNIX AND NOT APPLE)) # temporal until I figure out how to fix build
   endif()
 endif()
 
-if(APPLE OR WIN32)
+#if(APPLE OR WIN32)
 find_package(OpenCL)
 if(OpenCL_FOUND)
     add_subdirectory(OpenCL)
 endif()
-endif()
+#endif()
 
 INCLUDE(InstallRequiredSystemLibraries)
 

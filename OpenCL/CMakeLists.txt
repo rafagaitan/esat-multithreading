@@ -1,4 +1,4 @@
-# packages                                                                                                                                                                                                 
+# packages
 
 SET(FILES
     session8.cpp
@@ -6,14 +6,12 @@ SET(FILES
 )
 
 SET(HEADERS
-    Config.hpp
     OpenCLUtils.hpp
 )
 
 SET(OPENCL_SOURCES
     kernels.cl
 )
-
 
 FOREACH(F ${FILES})
     get_filename_component(APP_NAME ${F} NAME_WE)
@@ -31,7 +29,7 @@ FOREACH(F ${FILES})
        ${OpenCL_INCLUDE_DIRS}
     )
 
-    SET(LIBRARIES 
+    SET(LIBRARIES
         ${OpenCL_LIBRARIES}
         ${OPENGL_LIBRARIES}
         mtUtils
@@ -43,7 +41,7 @@ FOREACH(F ${FILES})
         set(HEADERS ${HEADERS} OpenGLUtils.hpp)
         include_directories(
             ${OPENGL_INCLUDE_DIR}
-            ${CMAKE_SOURCE_DIR}/OpenGL 
+            ${CMAKE_SOURCE_DIR}/OpenGL
             ${CMAKE_SOURCE_DIR}/deps/common/include
             ${GLFW_INCLUDE_DIR})
         FOREACH(BIN ${BIN_PATH})
@@ -59,6 +57,7 @@ FOREACH(F ${FILES})
         set(SOURCES ${SOURCES} ${CL_FILE})
     endforeach()
     ADD_DEFINITIONS(-DRESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
+    add_definitions(-D__CL_ENABLE_EXCEPTIONS)
     SETUP_LAUNCHER(${APP_NAME}_opencl opencl)
 
 ENDFOREACH(F)

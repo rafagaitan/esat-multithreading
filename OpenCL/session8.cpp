@@ -45,8 +45,6 @@
 
 #include <mtUtils/Algorithms.hpp>
 
-#include "Config.hpp"
-
 #include "cl.hpp"
 
 #include "OpenCLUtils.hpp"
@@ -71,7 +69,7 @@ namespace test_opencl
         else
             std::cout << " ... ";
     };
-    
+
     class TestKernels
     {
     public:
@@ -85,35 +83,35 @@ namespace test_opencl
         {
             err = CL_SUCCESS;
             cl::Platform::get(&platform);
-            
+
             context = cl::Context(CL_DEVICE_TYPE_GPU);
-            
+
             devices = context.getInfo<CL_CONTEXT_DEVICES>();
             std::string sumIntSrc = opencl::loadKernel("kernels.cl");
             cl::Program::Sources source(1, std::make_pair(sumIntSrc.c_str(),sumIntSrc.size()));
             program = cl::Program(context, source);
             program.build(devices);
-            
+
             printResults = print;
         }
         void multVectorsOpenCL(int arraySize, const int *a, const int *b, int *c)
         {
             _multVectorsOpenCL(c, a, b, arraySize);
         }
-        
+
         void addVectorsCPU(const unsigned int arraySize)
         {
             std::vector<float> a(arraySize);
             std::vector<float> b(arraySize);
             std::vector<float> c(arraySize);
-            
+
             for (unsigned int i = 0; i < arraySize; i++)
             {
                 a[i] = static_cast<float>(sin(i)*sin(i));
                 b[i] = static_cast<float>(cos(i)*cos(i));
                 c[i] = a[i] + b[i];
             }
-            
+
             if (printResults)
             {
                 printV(std::cout, a, a.size(),  0, 20); printV(std::cout, a, a.size(), arraySize - 20, 20);
@@ -129,10 +127,10 @@ namespace test_opencl
             std::vector<float> a(arraySize);
             std::vector<float> b(arraySize);
             std::vector<float> c(arraySize);
-            
+
             _fillVectorsOpenCL(a.data(),b.data(), arraySize);
             _addVectorsOpenCL(c.data(),a.data(),b.data(), arraySize);
-            
+
             if (printResults)
             {
                 printV(std::cout, a, a.size(), 0, 20); printV(std::cout, a, a.size(), arraySize - 20, 20);
@@ -143,15 +141,15 @@ namespace test_opencl
                 std::cout << std::endl;
             }
         }
-        
+
         void fillAndAddVectorsOpenCL(const unsigned int arraySize)
         {
             std::vector<float> a(arraySize);
             std::vector<float> b(arraySize);
             std::vector<float> c(arraySize);
-            
+
             _fillAndAddVectorsOpenCL(c.data(),a.data(),b.data(), arraySize);
-            
+
             if (printResults)
             {
                 printV(std::cout, a, a.size(), 0, 20); printV(std::cout, a, a.size(), arraySize - 20, 20);
@@ -163,7 +161,7 @@ namespace test_opencl
             }
         }
     private:
-        
+
         bool executeKernel(std::function<void ()> func)
         {
             try { func(); }
@@ -185,8 +183,8 @@ namespace test_opencl
         {
             return executeKernel([&,this](){
                 cl::Kernel kernel(program, "multKernel", &err);
-                
-                // Allocate and Copy vectors from host memory to GPU buffers (two input, one output) 
+
+                // Allocate and Copy vectors from host memory to GPU buffers (two input, one output)
                 cl::Buffer buffer_c(context, CL_MEM_WRITE_ONLY, size*sizeof(int));
                 cl::Buffer buffer_a(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size*sizeof(int), (void*)a);
                 cl::Buffer buffer_b(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size*sizeof(int), (void*)b);
@@ -198,12 +196,12 @@ namespace test_opencl
                 cl::Event event;
                 cl::CommandQueue queue(context, devices[0], 0, &err);
                 queue.enqueueNDRangeKernel(
-                    kernel, 
-                    cl::NullRange, 
+                    kernel,
+                    cl::NullRange,
                     cl::NDRange(size), // global
                     cl::NullRange,     // local
                     NULL,
-                    &event); 
+                    &event);
 
                 event.wait();
 
@@ -214,14 +212,14 @@ namespace test_opencl
         {
             return executeKernel([&,this](){
                 cl::Kernel kernel(program, "fillKernel", &err);
-                
+
                 // Allocate and Copy vectors from host memory to GPU buffers (two input, one output)
                 cl::Buffer buffer_a(context, CL_MEM_WRITE_ONLY, size*sizeof(float));
                 cl::Buffer buffer_b(context, CL_MEM_WRITE_ONLY, size*sizeof(float));
-                
+
                 kernel.setArg(0,buffer_a);
                 kernel.setArg(1,buffer_b);
-                
+
                 cl::Event event;
                 cl::CommandQueue queue(context, devices[0], 0, &err);
                 queue.enqueueNDRangeKernel(
@@ -231,9 +229,9 @@ namespace test_opencl
                                            cl::NullRange,     // local
                                            NULL,
                                            &event);
-                
+
                 event.wait();
-                
+
                 queue.enqueueReadBuffer(buffer_a,true,0,size*sizeof(float),a);
                 queue.enqueueReadBuffer(buffer_b,true,0,size*sizeof(float),b);
             });
@@ -242,16 +240,16 @@ namespace test_opencl
         {
             return executeKernel([&,this](){
                 cl::Kernel kernel(program, "addKernel", &err);
-                
+
                 // Allocate and Copy vectors from host memory to GPU buffers (two input, one output)
                 cl::Buffer buffer_c(context, CL_MEM_WRITE_ONLY, size*sizeof(float));
                 cl::Buffer buffer_a(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size*sizeof(float), (void*)a);
                 cl::Buffer buffer_b(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size*sizeof(float), (void*)b);
-                
+
                 kernel.setArg(0,buffer_c);
                 kernel.setArg(1,buffer_a);
                 kernel.setArg(2,buffer_b);
-                
+
                 cl::Event event;
                 cl::CommandQueue queue(context, devices[0], 0, &err);
                 queue.enqueueNDRangeKernel(
@@ -261,9 +259,9 @@ namespace test_opencl
                                            cl::NullRange,     // local
                                            NULL,
                                            &event);
-                
+
                 event.wait();
-                
+
                 queue.enqueueReadBuffer(buffer_c,true,0,size*sizeof(int),c);
             });
         }
@@ -271,16 +269,16 @@ namespace test_opencl
         {
             return executeKernel([&,this](){
                 cl::Kernel kernel(program, "fillAndAddKernel", &err);
-                
+
                 // Allocate and Copy vectors from host memory to GPU buffers (two input, one output)
                 cl::Buffer buffer_a(context, CL_MEM_WRITE_ONLY, size*sizeof(float));
                 cl::Buffer buffer_b(context, CL_MEM_WRITE_ONLY, size*sizeof(float));
                 cl::Buffer buffer_c(context, CL_MEM_WRITE_ONLY, size*sizeof(float));
-                
+
                 kernel.setArg(0,buffer_c);
                 kernel.setArg(1,buffer_a);
                 kernel.setArg(2,buffer_b);
-                
+
                 cl::Event event;
                 cl::CommandQueue queue(context, devices[0], 0, &err);
                 queue.enqueueNDRangeKernel(
@@ -290,9 +288,9 @@ namespace test_opencl
                                            cl::NullRange,     // local
                                            NULL,
                                            &event);
-                
+
                 event.wait();
-                
+
                 queue.enqueueReadBuffer(buffer_a,true,0,size*sizeof(int),a);
                 queue.enqueueReadBuffer(buffer_b,true,0,size*sizeof(int),b);
                 queue.enqueueReadBuffer(buffer_c,true,0,size*sizeof(int),c);
@@ -311,16 +309,16 @@ namespace test_opencl
         cl_uint numPlatforms = 0;
         cl_uint numDevices = 0;
         //Get the platform ID
-        
-        
+
+
         clGetPlatformIDs(0, NULL, &numPlatforms);
         if (numPlatforms == 0)
-            return 0; 
+            return 0;
 
         std::unique_ptr<cl_platform_id[]> platforms(new cl_platform_id[numPlatforms]);
         clGetPlatformIDs(numPlatforms, platforms.get(), NULL);
-       
-        
+
+
         // Get the first GPU device associated with the platform
         clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
         std::unique_ptr<cl_device_id[]> devices(new cl_device_id[numDevices]);
@@ -338,7 +336,7 @@ namespace test_opencl
         cl::Platform::get(&platform);
         return cl::Context(CL_DEVICE_TYPE_GPU);
     }
-    
+
     int num_opencl_plaforms()
     {
         std::vector<cl::Platform> platforms;
@@ -400,38 +398,38 @@ int main()
         cl_mem b_buffer = clCreateBuffer(ctx_c, CL_MEM_READ_ONLY| CL_MEM_COPY_HOST_PTR, arraySize*sizeof(float), (void*)b_f, NULL);
         cl_mem d_buffer = clCreateBuffer(ctx_c, CL_MEM_READ_WRITE, arraySize*sizeof(float), NULL, NULL);
         test_opencl::compile_kernel_c(ctx_c, a_buffer, b_buffer, d_buffer, 3);
-        
+
         //// Create a command-queue for a specific device
         //cl_command_queue cmd_queue = clCreateCommandQueue(ctx_c, device_id, 0, NULL);
-        
+
         //// Write to buffer object from host memory
         //clEnqueueWriteBuffer(cmd_queue, a_buffer, CL_FALSE, 0, arraySize*sizeof(float), a_f, 0, NULL, NULL);
-        
+
         //// Set number of work-items in a work-group
         //size_t localWorkSize = 256;
         //int numWorkGroups= (N + localWorkSize - 1) / localWorkSize; // round up
         //size_t globalWorkSize= numWorkGroups* localWorkSize;// must be evenly divisible by localWorkSize
         //clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL,
         //                        &globalWorkSize, &localWorkSize, 0, NULL, NULL);
-        
+
         //// Read from buffer object to host memory
         //clEnqueueReadBuffer(cmd_queue, d_buffer, CL_TRUE, 0, arraySize*sizeof(float), c_f, 0, NULL, NULL);
-        
+
         clReleaseMemObject(a_buffer);
         clReleaseMemObject(b_buffer);
         clReleaseMemObject(d_buffer);
         clReleaseContext(ctx_c);
-        
+
     }
-    
+
     {
         std::cout << "Test traditional mult" << std::endl;
         test_opencl::trad_mult(arraySize, a, b, c);
-        std::cout << "{1,2,3,4,5} + {10,20,30,40,50} = {" << 
-            c[0] << "," << 
+        std::cout << "{1,2,3,4,5} + {10,20,30,40,50} = {" <<
+            c[0] << "," <<
             c[1] << "," <<
             c[2] << "," <<
-            c[3] << "," << 
+            c[3] << "," <<
             c[4] << "}" << std::endl;
     }
     {
@@ -443,11 +441,11 @@ int main()
         {
             std::cout << "Test OpenCL mult" << std::endl;
             testKernels.multVectorsOpenCL(arraySize, a, b, c);
-            std::cout << "{1,2,3,4,5} + {10,20,30,40,50} = {" << 
-                c[0] << "," << 
+            std::cout << "{1,2,3,4,5} + {10,20,30,40,50} = {" <<
+                c[0] << "," <<
                 c[1] << "," <<
                 c[2] << "," <<
-                c[3] << "," << 
+                c[3] << "," <<
                 c[4] << "}" << std::endl;
         }
         std::cout << "Test AddVectorsCPU, running ..." << std::endl;
@@ -484,7 +482,7 @@ int main()
             }
         }
     }
- 
+
 
     return 0;
 }

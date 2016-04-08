@@ -104,7 +104,7 @@ public:
 
     }
 
-    void OnInit(const Window& view)
+    void OnInit(const hdk::Window& view)
     {
         int w, h;
         view.getWindowSize(w, h);
@@ -121,7 +121,7 @@ public:
         glDeleteProgram(_renderProgram);
     }
 
-    void OnDraw(const Window& view)
+    void OnDraw(const hdk::Window& view)
     {
         float time = std::chrono::duration<float>(std::chrono::system_clock::now() - _startTime).count();
         computeVertices(time);
@@ -257,9 +257,9 @@ bool done = false;
 
 int main()
 {
-    Window view;
+    hdk::Window view;
     view.setWindowKeyCallback(
-        [](int32 key, int32 /*scancode*/, int32 action, int32)
+        [](hdk::int32 key, hdk::int32 /*scancode*/, hdk::int32 action, hdk::int32)
     {
         if (action == 1) // released
         {

@@ -46,8 +46,6 @@
 // hdk includes
 #include <window.hpp>
 
-#include "Config.hpp"
-
 #include "cl.hpp"
 
 #include "OpenCLUtils.hpp"
@@ -130,7 +128,7 @@ public:
         ,_program()
         ,_kernel_computeVertices()
         ,_queue()
-        
+
         ,_zoom(5.0f)
         ,_rotateX(45.0f)
         ,_rotateY(45.0f)
@@ -140,7 +138,7 @@ public:
 
     }
 
-    void OnInit(const Window& view)
+    void OnInit(const hdk::Window& view)
     {
         int w,h;
         view.getWindowSize(w, h);
@@ -149,7 +147,7 @@ public:
         {
             initCL();
         }
-        catch(cl::Error& err) 
+        catch(cl::Error& err)
         {
             std::cerr << "Error in OpenCL:" << err.what() << " Error code=" << err.err() << std::endl;
 
@@ -166,7 +164,7 @@ public:
         glDeleteProgram(_renderProgram);
     }
 
-    void OnDraw(const Window& view)
+    void OnDraw(const hdk::Window& view)
     {
         float time = std::chrono::duration<float>(std::chrono::system_clock::now() - _startTime).count();
         computeVertices(time);
@@ -188,7 +186,7 @@ public:
         glTranslatef(0,0,-_zoom);
         glTranslatef(_translateX,_translateY,0);
         glRotatef(_rotateX,1,0,0);
-        glRotatef(_rotateY,0,1,0);	
+        glRotatef(_rotateY,0,1,0);
 
         glUseProgram(_renderProgram);
 
@@ -258,7 +256,7 @@ GLuint createProgram() {
     if(success) {
         program = glCreateProgram();
 
-        glAttachShader(program, vertexShader); 
+        glAttachShader(program, vertexShader);
         glAttachShader(program, fragmentShader);
         glLinkProgram(program);
         _vertexPositionCULocation = glGetAttribLocation( program, "vertexPosition");
@@ -292,8 +290,8 @@ GLuint createProgram() {
         // execute kernel
         _kernel_computeVertices.setArg(3,simulationTime);
         _queue.enqueueNDRangeKernel(
-                _kernel_computeVertices, 
-                cl::NullRange, 
+                _kernel_computeVertices,
+                cl::NullRange,
                 cl::NDRange(meshWidth,meshHeight), // global
                 cl::NullRange);             // local
         // free vbos for gl rendering
@@ -301,16 +299,16 @@ GLuint createProgram() {
     }
 
 
-        
+
 };
 
 bool done = false;
 
 int main()
 {
-    Window view;
+    hdk::Window view;
     view.setWindowKeyCallback(
-        [](int32 key, int32 /*scancode*/, int32 action, int32) 
+        [](hdk::int32 key, hdk::int32 /*scancode*/, hdk::int32 action, hdk::int32)
     {
         if (action == 1) // released
         {
@@ -327,7 +325,7 @@ int main()
 
     SceneManager scene;
     scene.OnInit(view);
-    
+
     while (!view.ShouldClose() && ! done)
     {
 

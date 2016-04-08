@@ -38,3 +38,4 @@
 #pragma once
 
 #define __CL_ENABLE_EXCEPTIONS
+#define CL_VERSION_1_2
