@@ -71,6 +71,7 @@ find_path(OpenCL_INCLUDE_DIR
   NAMES
     CL/cl.h OpenCL/cl.h OpenCL/opencl.h
   PATHS
+    /usr/local/cuda
     ENV "PROGRAMFILES(X86)"
     ENV AMDAPPSDKROOT
     ENV INTELOCLSDKROOT
@@ -80,7 +81,14 @@ find_path(OpenCL_INCLUDE_DIR
   PATH_SUFFIXES
     include
     OpenCL/common/inc
-    "AMD APP/include")
+    "AMD APP/include"
+  NO_DEFAULT_PATH
+)
+  
+find_path(OpenCL_INCLUDE_DIR
+  NAMES
+    CL/cl.h OpenCL/cl.h OpenCL/opencl.h)
+
 
 _FIND_OPENCL_VERSION()
 
@@ -104,6 +112,7 @@ if(WIN32)
     find_library(OpenCL_LIBRARY
       NAMES OpenCL
       PATHS
+        /usr/local/cuda
         ENV "PROGRAMFILES(X86)"
         ENV AMDAPPSDKROOT
         ENV INTELOCLSDKROOT
@@ -118,7 +127,19 @@ if(WIN32)
   endif()
 else()
   find_library(OpenCL_LIBRARY
+    NAMES OpenCL
+    PATHS 
+      /usr/local/cuda
+      ${CUDA_PATH}
+      ENV CUDA_PATH
+    PATH_SUFFIXES
+      lib
+      lib64
+    NO_DEFAULT_PATH
+  )
+  find_library(OpenCL_LIBRARY
     NAMES OpenCL)
+
 endif()
 
 set(OpenCL_LIBRARIES ${OpenCL_LIBRARY})
